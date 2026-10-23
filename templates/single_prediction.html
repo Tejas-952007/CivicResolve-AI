@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Individual Complaint Analysis — CivicResolve AI{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-3">
+  <div class="col-md-8">
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-calculator me-2 text-primary"></i>Intake-Time Resolution Forecasting</h3>
+    <p class="text-muted mb-0" style="font-size: 0.9rem;">
+      Score newly filed service requests using frozen Phase 2 regression and classification pipelines.
+    </p>
+  </div>
+</div>
+
+<!-- Notice Banner -->
+<div class="civic-alert-banner mb-3 d-flex align-items-center">
+  <i class="fa-solid fa-shield-halved fs-5 text-primary me-3"></i>
+  <div>
+    <strong>Leakage-Free Guarantee:</strong> This prediction engine uses <em>only</em> intake-time features known at ticket creation. 
+    Outcome attributes (resolution status, closing date, actual elapsed time) are strictly barred.
+  </div>
+</div>
+
+<!-- Quick Demo Presets -->
+<div class="card border-0 shadow-sm mb-4 bg-light">
+  <div class="card-body py-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <span class="small fw-semibold text-muted"><i class="fa-solid fa-wand-magic-sparkles me-1 text-info"></i>Load Example Preset:</span>
+    <div class="btn-group btn-group-sm flex-wrap" role="group">
+      <button type="button" class="btn btn-outline-secondary" onclick="loadPreset('noise')">
+        <i class="fa-solid fa-volume-high me-1"></i> Residential Noise (Brooklyn)
+      </button>
+      <button type="button" class="btn btn-outline-secondary" onclick="loadPreset('parking')">
+        <i class="fa-solid fa-ban me-1"></i> Blocked Driveway (Queens)
+      </button>
+      <button type="button" class="btn btn-outline-secondary" onclick="loadPreset('pothole')">
+        <i class="fa-solid fa-road me-1"></i> Street Pothole (Bronx)
+      </button>
+      <button type="button" class="btn btn-outline-secondary" onclick="loadPreset('tree')">
+        <i class="fa-solid fa-tree me-1"></i> New Tree Request (Manhattan)
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Input Form Column -->
+  <div class="col-lg-7">
+    <div class="civic-card p-4">
+      <h5 class="fw-bold mb-3"><i class="fa-solid fa-file-pen me-2 text-primary"></i>Service Request Intake Form</h5>
+      
+      <form method="POST" action="{{ url_for('predict_view') }}" id="prediction-form">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-muted">Complaint Category *</label>
+            <select name="complaint_type" id="input_complaint_type" class="form-select form-select-sm" required>
+              <option value="">Select Category...</option>
+              {% for ct in complaint_types %}
+                <option value="{{ ct }}" {% if form_data and form_data.complaint_type == ct %}selected{% endif %}>{{ ct }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-muted">Borough *</label>
+            <select name="borough" id="input_borough" class="form-select form-select-sm" required>
+              <option value="">Select Borough...</option>
+              {% for b in boroughs %}
+                <option value="{{ b }}" {% if form_data and form_data.borough == b %}selected{% endif %}>{{ b }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-muted">Descriptor (Sub-Issue)</label>
+            <input type="text" name="descriptor" id="input_descriptor" class="form-control form-control-sm" placeholder="e.g. Loud Music/Party, Pothole" value="{{ form_data.descriptor if form_data else '' }}">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-muted">Incident ZIP Code</label>
+            <input type="text" name="incident_zip" id="input_zip" class="form-control form-control-sm" placeholder="e.g. 11201" value="{{ form_data.incident_zip if form_data else '' }}">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold text-muted">Intake Channel</label>
+            <select name="open_data_channel_type" id="input_channel" class="form-select form-select-sm">
+              <option value="ONLINE" {% if form_data and form_data.open_data_channel_type == 'ONLINE' %}selected{% endif %}>ONLINE</option>
+              <option value="PHONE" {% if form_data and form_data.open_data_channel_type == 'PHONE' %}selected{% endif %}>PHONE</option>
+              <option value="MOBILE" {% if form_data and form_data.open_data_channel_type == 'MOBILE' %}selected{% endif %}>MOBILE</option>
+              <option value="OTHER" {% if form_data and form_data.open_data_channel_type == 'OTHER' %}selected{% endif %}>OTHER</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold text-muted">Creation Date</label>
+            <input type="date" name="created_date" id="input_date" class="form-control form-control-sm" value="{{ form_data.created_date if form_data else '2024-03-15' }}">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold text-muted">Creation Hour (0–23)</label>
+            <input type="number" name="created_hour" id="input_hour" class="form-control form-control-sm" min="0" max="23" value="{{ form_data.created_hour if form_data else '14' }}">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-muted">Latitude (Optional)</label>
+            <input type="text" name="latitude" id="input_lat" class="form-control form-control-sm" placeholder="e.g. 40.692" value="{{ form_data.latitude if form_data else '' }}">
+            <div class="form-text text-muted" style="font-size: 0.75rem;">If blank, imputed via training median</div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-muted">Longitude (Optional)</label>
+            <input type="text" name="longitude" id="input_lon" class="form-control form-control-sm" placeholder="e.g. -73.987" value="{{ form_data.longitude if form_data else '' }}">
+            <div class="form-text text-muted" style="font-size: 0.75rem;">If blank, imputed via training median</div>
+          </div>
+
+          <div class="col-12 mt-4">
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+              <i class="fa-solid fa-microchip me-2"></i>Compute Resolution Forecast & Risk
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Prediction Output Column -->
+  <div class="col-lg-5">
+    {% if result %}
+      <div class="civic-card p-4 border-primary">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0 text-primary"><i class="fa-solid fa-square-poll-vertical me-2"></i>Forecast Output</h5>
+          <span class="badge {{ result.risk_badge }} px-3 py-2 fs-6">{{ result.risk_label }}</span>
+        </div>
+
+        <!-- Metric 1: Duration Estimate -->
+        <div class="p-3 bg-light rounded mb-3 border">
+          <div class="d-flex justify-content-between align-items-baseline mb-1">
+            <span class="small fw-semibold text-muted text-uppercase">Expected Resolution Duration</span>
+            <span class="fs-5 fw-bold text-dark">{{ result.predicted_resolution_hours }} hrs</span>
+          </div>
+          <div class="fs-6 fw-semibold text-primary mb-1">
+            <i class="fa-regular fa-clock me-1"></i>{{ result.predicted_duration_label }}
+          </div>
+          <p class="small text-muted mb-0" style="font-size: 0.775rem;">
+            Generated by Random Forest (Log1p target). Test Median Absolute Error is ~15.6 hours.
+          </p>
+        </div>
+
+        <!-- Metric 2: Long Duration Probability -->
+        <div class="p-3 bg-light rounded mb-3 border">
+          <div class="d-flex justify-content-between align-items-baseline mb-1">
+            <span class="small fw-semibold text-muted text-uppercase">Long-Duration Risk Score</span>
+            <span class="fs-5 fw-bold text-danger">{{ result.predicted_risk_percentage }}%</span>
+          </div>
+          <div class="progress mb-2" style="height: 10px;">
+            <div class="progress-bar {% if result.predicted_risk_probability >= 0.5 %}bg-danger{% else %}bg-success{% endif %}" role="progressbar" {{ ('style="width: ' ~ result.predicted_risk_percentage ~ '%;"') | safe }}></div>
+          </div>
+          <p class="small text-muted mb-0" style="font-size: 0.775rem;">
+            Probability of exceeding the <strong>{{ result.threshold_hours }}h</strong> (~5.2 days) 75th percentile threshold.
+            Logistic Regression Test Recall: <strong>88.7%</strong>, Precision: <strong>59.1%</strong>.
+          </p>
+        </div>
+
+        <!-- Benchmark & SLA Disclaimers -->
+        <div class="alert alert-warning py-2 px-3 small mb-2" style="font-size: 0.8rem;">
+          <i class="fa-solid fa-triangle-exclamation me-1"></i>
+          <strong>Non-Guaranteed Prediction:</strong> This forecast represents statistical expectation under historical conditions, not a binding municipal SLA or guaranteed completion time.
+        </div>
+
+        <div class="alert alert-secondary py-2 px-3 small mb-0" style="font-size: 0.8rem;">
+          <i class="fa-solid fa-location-dot me-1"></i>
+          <strong>Geographic Applicability:</strong> Models were trained strictly on NYC 311 data. Predictions are not validated for PCMC or Indian municipal contexts.
+        </div>
+      </div>
+    {% else %}
+      <div class="civic-card p-4 text-center text-muted h-100 d-flex flex-column justify-content-center align-items-center">
+        <i class="fa-solid fa-clipboard-question fs-1 mb-3 text-secondary"></i>
+        <h6 class="fw-bold">No Prediction Generated Yet</h6>
+        <p class="small max-w-300">
+          Complete the intake form on the left or select an example preset above to view estimated resolution duration and delay risk probability.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function loadPreset(type) {
+    if (type === 'noise') {
+      document.getElementById('input_complaint_type').value = 'Noise - Residential';
+      document.getElementById('input_borough').value = 'BROOKLYN';
+      document.getElementById('input_descriptor').value = 'Loud Music/Party';
+      document.getElementById('input_zip').value = '11201';
+      document.getElementById('input_channel').value = 'ONLINE';
+      document.getElementById('input_date').value = '2024-05-18';
+      document.getElementById('input_hour').value = '23';
+      document.getElementById('input_lat').value = '40.692';
+      document.getElementById('input_lon').value = '-73.987';
+    } else if (type === 'parking') {
+      document.getElementById('input_complaint_type').value = 'Blocked Driveway';
+      document.getElementById('input_borough').value = 'QUEENS';
+      document.getElementById('input_descriptor').value = 'No Access';
+      document.getElementById('input_zip').value = '11375';
+      document.getElementById('input_channel').value = 'MOBILE';
+      document.getElementById('input_date').value = '2024-04-10';
+      document.getElementById('input_hour').value = '9';
+      document.getElementById('input_lat').value = '40.718';
+      document.getElementById('input_lon').value = '-73.844';
+    } else if (type === 'pothole') {
+      document.getElementById('input_complaint_type').value = 'Street Condition';
+      document.getElementById('input_borough').value = 'BRONX';
+      document.getElementById('input_descriptor').value = 'Pothole';
+      document.getElementById('input_zip').value = '10458';
+      document.getElementById('input_channel').value = 'PHONE';
+      document.getElementById('input_date').value = '2024-02-20';
+      document.getElementById('input_hour').value = '11';
+      document.getElementById('input_lat').value = '40.855';
+      document.getElementById('input_lon').value = '-73.883';
+    } else if (type === 'tree') {
+      document.getElementById('input_complaint_type').value = 'New Tree Request';
+      document.getElementById('input_borough').value = 'MANHATTAN';
+      document.getElementById('input_descriptor').value = 'For One Address';
+      document.getElementById('input_zip').value = '10025';
+      document.getElementById('input_channel').value = 'ONLINE';
+      document.getElementById('input_date').value = '2024-06-01';
+      document.getElementById('input_hour').value = '15';
+      document.getElementById('input_lat').value = '40.798';
+      document.getElementById('input_lon').value = '-73.966';
+    }
+  }
+</script>
+{% endblock %}

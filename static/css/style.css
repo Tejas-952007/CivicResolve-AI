@@ -1,0 +1,203 @@
+/* CivicResolve AI — Professional Civic Analytics Stylesheet */
+
+:root {
+  --civic-slate-900: #0f172a;
+  --civic-slate-800: #1e293b;
+  --civic-slate-700: #334155;
+  --civic-slate-600: #475569;
+  --civic-slate-500: #64748b;
+  --civic-slate-300: #cbd5e1;
+  --civic-slate-200: #e2e8f0;
+  --civic-slate-100: #f1f5f9;
+  --civic-slate-50:  #f8fafc;
+  
+  --civic-blue:      #0284c7;
+  --civic-blue-dark: #0369a1;
+  --civic-teal:      #0f766e;
+  --civic-teal-light:#14b8a6;
+  --civic-amber:     #d97706;
+  --civic-rose:      #e11d48;
+  
+  --civic-card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --civic-card-hover:  0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--civic-slate-50);
+  color: var(--civic-slate-900);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar */
+.civic-navbar {
+  background-color: var(--civic-slate-900);
+  border-bottom: 2px solid var(--civic-blue);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.civic-brand {
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #ffffff !important;
+}
+
+.civic-brand span {
+  color: var(--civic-blue);
+}
+
+.nav-link {
+  font-weight: 500;
+  font-size: 0.925rem;
+  color: var(--civic-slate-300) !important;
+  transition: color 0.15s ease-in-out;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: #ffffff !important;
+}
+
+.nav-link.active {
+  border-bottom: 2px solid var(--civic-blue);
+}
+
+/* KPI Cards */
+.kpi-card {
+  background: #ffffff;
+  border: 1px solid var(--civic-slate-200);
+  border-radius: 8px;
+  box-shadow: var(--civic-card-shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--civic-card-hover);
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--civic-slate-500);
+  margin-bottom: 4px;
+}
+
+.kpi-value {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--civic-slate-900);
+  line-height: 1.1;
+}
+
+.kpi-subtext {
+  font-size: 0.825rem;
+  color: var(--civic-slate-600);
+  margin-top: 4px;
+}
+
+/* Card Headers */
+.civic-card {
+  background: #ffffff;
+  border: 1px solid var(--civic-slate-200);
+  border-radius: 8px;
+  box-shadow: var(--civic-card-shadow);
+  margin-bottom: 1.5rem;
+}
+
+.civic-card-header {
+  padding: 1rem 1.25rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--civic-slate-200);
+  font-weight: 600;
+  color: var(--civic-slate-800);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Filter Bar */
+.filter-bar {
+  background-color: #ffffff;
+  border: 1px solid var(--civic-slate-200);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--civic-card-shadow);
+}
+
+/* Prediction Badges */
+.badge-risk-low {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.badge-risk-moderate {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
+.badge-risk-elevated {
+  background-color: #f59e0b;
+  color: #1e293b;
+}
+
+.badge-risk-high {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+/* Disclaimers */
+.civic-alert-banner {
+  background-color: #f8fafc;
+  border-left: 4px solid var(--civic-blue);
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: var(--civic-slate-700);
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 1.5rem;
+}
+
+.civic-alert-warning {
+  background-color: #fffbeb;
+  border-left: 4px solid var(--civic-amber);
+  color: #92400e;
+}
+
+/* Tables */
+.table-civic th {
+  background-color: var(--civic-slate-100);
+  color: var(--civic-slate-700);
+  font-size: 0.825rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  border-top: none;
+}
+
+.table-civic td {
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+/* Footer */
+.civic-footer {
+  margin-top: auto;
+  background-color: var(--civic-slate-900);
+  color: var(--civic-slate-400);
+  font-size: 0.825rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--civic-slate-800);
+}
+
+.civic-footer a {
+  color: var(--civic-blue);
+  text-decoration: none;
+}
+
+.civic-footer a:hover {
+  text-decoration: underline;
+}

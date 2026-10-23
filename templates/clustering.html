@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Pattern Discovery & Clustering — CivicResolve AI{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-3">
+  <div class="col-md-8">
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-diagram-project me-2 text-primary"></i>K-Means Complaint Pattern Discovery</h3>
+    <p class="text-muted mb-0" style="font-size: 0.9rem;">
+      Unsupervised operational clustering across 274 municipal complaint segments (Borough &times; Complaint Category).
+    </p>
+  </div>
+  <div class="col-md-4 text-md-end mt-2 mt-md-0">
+    <a href="{{ url_for('export_clustering_csv') }}" class="btn btn-sm btn-success">
+      <i class="fa-solid fa-file-csv me-1"></i> Download Cluster Segments CSV
+    </a>
+  </div>
+</div>
+
+<!-- Notice Banner -->
+<div class="civic-alert-banner mb-4 d-flex align-items-center">
+  <i class="fa-solid fa-circle-nodes fs-5 text-primary me-3"></i>
+  <div>
+    <strong>Unsupervised Methodology:</strong> Clustering is fitted on scaled operational metrics (volume, median duration, delay share, open share, weekend ratio) 
+    <em>without</em> using supervised target labels to manufacture groupings. Clusters reflect historical service demand archetypes, not root causes.
+  </div>
+</div>
+
+<!-- Silhouette Score & Cluster Evidence Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6">
+    <div class="kpi-card p-3 text-center">
+      <div class="kpi-label">Segments Analyzed</div>
+      <div class="kpi-value text-primary">{{ clustering.total_segments_analyzed }}</div>
+      <div class="kpi-subtext text-muted">&ge;5 complaints per group</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="kpi-card p-3 text-center">
+      <div class="kpi-label">Selected Clusters (k)</div>
+      <div class="kpi-value text-success">k = {{ clustering.selected_k }}</div>
+      <div class="kpi-subtext text-muted">Optimal cluster partition</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="kpi-card p-3 text-center">
+      <div class="kpi-label">Silhouette Score</div>
+      <div class="kpi-value text-dark">{{ clustering.selected_silhouette_score }}</div>
+      <div class="kpi-subtext text-muted">Superior vs k=2..4</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="kpi-card p-3 text-center">
+      <div class="kpi-label">PCA Explained Variance</div>
+      <div class="kpi-value text-info">{{ (clustering.pca_variance_explained_pct[0] + clustering.pca_variance_explained_pct[1]) | round(1) }}%</div>
+      <div class="kpi-subtext text-muted">PC1: {{ clustering.pca_variance_explained_pct[0] }}% | PC2: {{ clustering.pca_variance_explained_pct[1] }}%</div>
+    </div>
+  </div>
+</div>
+
+<!-- PCA Scatter Plot & Silhouette Comparison -->
+<div class="row g-4 mb-4">
+  <!-- Interactive PCA 2D Plot -->
+  <div class="col-lg-8">
+    <div class="civic-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="fa-solid fa-chart-line text-primary me-2"></i>2D PCA Projection of Service Demand Archetypes</h6>
+        <span class="badge bg-light text-secondary border">274 Municipal Segments</span>
+      </div>
+      <div id="chart-pca" style="height: 380px;"></div>
+    </div>
+  </div>
+
+  <!-- Silhouette Score Comparison Table -->
+  <div class="col-lg-4">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold mb-2"><i class="fa-solid fa-list-ol text-primary me-2"></i>Cluster Selection Evidence (k=2..5)</h6>
+      <p class="small text-muted mb-3" style="font-size: 0.8rem;">
+        Silhouette analysis quantifies how well-separated each cluster is relative to neighbouring groups.
+      </p>
+      <div class="table-responsive">
+        <table class="table table-sm table-civic mb-0">
+          <thead>
+            <tr>
+              <th>Cluster Count (k)</th>
+              <th>Silhouette Score</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for k_val, score in clustering.silhouette_scores.items() %}
+              <tr {% if k_val == clustering.selected_k %}class="table-success fw-bold"{% endif %}>
+                <td>k = {{ k_val }}</td>
+                <td>{{ score }}</td>
+                <td>
+                  {% if k_val == clustering.selected_k %}
+                    <span class="badge bg-success">Optimal</span>
+                  {% else %}
+                    <span class="text-muted small">Candidate</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="alert alert-light border small mt-3 mb-0" style="font-size: 0.775rem;">
+        <i class="fa-solid fa-info-circle text-info me-1"></i>
+        <strong>k=5</strong> achieved the highest silhouette coefficient (0.3836), effectively isolating multi-month tree requests, heavy backlog operations, and rapid dispatch services.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cluster Profiles Table -->
+<div class="civic-card p-4 mb-4">
+  <h5 class="fw-bold mb-3"><i class="fa-solid fa-layer-group text-primary me-2"></i>Discovered Municipal Cluster Archetypes</h5>
+  
+  <div class="table-responsive">
+    <table class="table table-sm table-hover table-civic align-middle mb-0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Archetype Profile Label</th>
+          <th>Segments</th>
+          <th>Avg Vol</th>
+          <th>Avg Median Duration</th>
+          <th>Delay Rate (&gt;124.9h)</th>
+          <th>Open %</th>
+          <th>Representative Service Types</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in clustering.cluster_profiles %}
+          <tr>
+            <td><span class="badge bg-dark">#{{ p.cluster_id }}</span></td>
+            <td class="fw-semibold text-primary">{{ p.label }}</td>
+            <td>{{ p.size }} ({{ p.share_of_segments_pct }}%)</td>
+            <td>{{ p.avg_requests }}</td>
+            <td>
+              <div class="fw-bold">{{ p.avg_median_hours }}h</div>
+              <div class="text-muted small">~{{ p.avg_median_days }} days</div>
+            </td>
+            <td>
+              <span class="fw-semibold {% if p.avg_long_delay_rate_pct > 50 %}text-danger{% elif p.avg_long_delay_rate_pct > 20 %}text-warning{% else %}text-success{% endif %}">
+                {{ p.avg_long_delay_rate_pct }}%
+              </span>
+            </td>
+            <td>{{ p.avg_open_share_pct }}%</td>
+            <td class="small text-muted">{{ p.representative_categories }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="segments-data" type="application/json">
+  {{ clustering.segments_data | tojson }}
+</script>
+<script>
+  const segments = JSON.parse(document.getElementById('segments-data').textContent);
+  
+  // Group points by cluster for Plotly coloring
+  const clusters = {};
+  segments.forEach(s => {
+    if (!clusters[s.cluster_label]) {
+      clusters[s.cluster_label] = {
+        x: [],
+        y: [],
+        text: [],
+        name: s.cluster_label,
+        mode: 'markers',
+        type: 'scatter',
+        marker: { size: 7 }
+      };
+    }
+    clusters[s.cluster_label].x.push(s.pca_x);
+    clusters[s.cluster_label].y.push(s.pca_y);
+    clusters[s.cluster_label].text.push(
+      `<b>${s.complaint_type} (${s.borough})</b><br>` +
+      `Requests: ${s.request_count}<br>` +
+      `Median Hours: ${s.median_resolution_hours}h<br>` +
+      `Delay Rate: ${(s.long_duration_share * 100).toFixed(1)}%<br>` +
+      `Open Rate: ${(s.open_case_share * 100).toFixed(1)}%`
+    );
+  });
+  
+  const traces = Object.values(clusters);
+  const layout = {
+    margin: { l: 45, r: 25, t: 20, b: 40 },
+    legend: { orientation: 'h', y: 1.15, x: 0 },
+    xaxis: { title: 'First Principal Component (PC1 - Scale & Velocity)' },
+    yaxis: { title: 'Second Principal Component (PC2 - Backlog & Timing)' },
+    hovermode: 'closest'
+  };
+  
+  Plotly.newPlot('chart-pca', traces, layout, { responsive: true, displayModeBar: false });
+</script>
+{% endblock %}

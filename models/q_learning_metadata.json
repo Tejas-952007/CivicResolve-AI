@@ -1,0 +1,40 @@
+{
+  "project": "CivicResolve AI",
+  "phase": "Phase 4: Reinforcement Learning Resource Allocation",
+  "algorithm": "Tabular Q-Learning",
+  "state_representation": "Discretized (highest_risk_queue, oldest_queue, capacity_tier, backlog_tier, risk_pressure)",
+  "action_space": [
+    "Illegal Parking",
+    "Noise - Residential",
+    "HEAT/HOT WATER",
+    "Blocked Driveway",
+    "Noise - Street/Sidewalk",
+    "Other"
+  ],
+  "action_space_size": 6,
+  "training_partition": "2023 (NYC 311 Profiling Cohort)",
+  "validation_partition": "2024-H1",
+  "test_partition": "2024-H2",
+  "num_q_states_explored": 117,
+  "config": {
+    "capacity_per_period": 5,
+    "horizon_periods": 10,
+    "arrival_batch_size": 6,
+    "training_episodes": 15,
+    "alpha": 0.1,
+    "gamma": 0.95,
+    "epsilon_start": 1.0,
+    "epsilon_min": 0.05,
+    "epsilon_decay": 0.98,
+    "seed": 99,
+    "reward_weight_risk": 2.0,
+    "reward_weight_wait": 1.0,
+    "reward_weight_backlog": 0.15,
+    "reward_penalty_empty": 0.5,
+    "reward_penalty_starve": 0.4,
+    "reward_penalty_term": 0.5,
+    "use_oof_for_training": true
+  },
+  "reward_formulation": "r = w_risk * pred_risk + w_wait * norm_wait - w_backlog * risk_backlog - penalties",
+  "scientific_disclaimer": "Simulated capacity allocation experiment on NYC 311 rank-stratified sample. Not a deployed municipal SLA or causal reduction proof."
+}

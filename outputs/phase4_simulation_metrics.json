@@ -1,0 +1,177 @@
+{
+  "metadata": {
+    "project": "CivicResolve AI",
+    "phase": "Phase 4: Reinforcement Learning Resource Allocation",
+    "algorithm": "Tabular Q-Learning",
+    "state_representation": "Discretized (highest_risk_queue, oldest_queue, capacity_tier, backlog_tier, risk_pressure)",
+    "action_space": [
+      "Illegal Parking",
+      "Noise - Residential",
+      "HEAT/HOT WATER",
+      "Blocked Driveway",
+      "Noise - Street/Sidewalk",
+      "Other"
+    ],
+    "action_space_size": 6,
+    "training_partition": "2023 (NYC 311 Profiling Cohort)",
+    "validation_partition": "2024-H1",
+    "test_partition": "2024-H2",
+    "num_q_states_explored": 117,
+    "config": {
+      "capacity_per_period": 5,
+      "horizon_periods": 10,
+      "arrival_batch_size": 6,
+      "training_episodes": 15,
+      "alpha": 0.1,
+      "gamma": 0.95,
+      "epsilon_start": 1.0,
+      "epsilon_min": 0.05,
+      "epsilon_decay": 0.98,
+      "seed": 99,
+      "reward_weight_risk": 2.0,
+      "reward_weight_wait": 1.0,
+      "reward_weight_backlog": 0.15,
+      "reward_penalty_empty": 0.5,
+      "reward_penalty_starve": 0.4,
+      "reward_penalty_term": 0.5,
+      "use_oof_for_training": true
+    },
+    "reward_formulation": "r = w_risk * pred_risk + w_wait * norm_wait - w_backlog * risk_backlog - penalties",
+    "scientific_disclaimer": "Simulated capacity allocation experiment on NYC 311 rank-stratified sample. Not a deployed municipal SLA or causal reduction proof."
+  },
+  "evaluation_split": "test",
+  "evaluation_seeds": [
+    99,
+    100,
+    101,
+    102,
+    103
+  ],
+  "summary": [
+    {
+      "policy": "Q-Learning",
+      "mean_reward": 36.81,
+      "std_reward": 5.01,
+      "mean_slots_used": 50.0,
+      "mean_slot_utilization_pct": 100.0,
+      "mean_items_handled": 50.0,
+      "mean_remaining_backlog": 10.0,
+      "mean_remaining_high_risk": 1.6,
+      "mean_waiting_periods": 0.75,
+      "p95_waiting_periods": 2.2,
+      "mean_max_starvation": 2.8,
+      "mean_pred_high_risk_handled": 15.6,
+      "mean_true_long_handled": 9.6,
+      "mean_true_long_capture_pct": 92.7,
+      "queue_distribution_pct": {
+        "Illegal Parking": 14.4,
+        "Noise - Residential": 13.6,
+        "HEAT/HOT WATER": 6.4,
+        "Blocked Driveway": 4.4,
+        "Noise - Street/Sidewalk": 6.8,
+        "Other": 54.4
+      }
+    },
+    {
+      "policy": "FIFO",
+      "mean_reward": 35.85,
+      "std_reward": 5.8,
+      "mean_slots_used": 50.0,
+      "mean_slot_utilization_pct": 100.0,
+      "mean_items_handled": 50.0,
+      "mean_remaining_backlog": 10.0,
+      "mean_remaining_high_risk": 2.2,
+      "mean_waiting_periods": 0.82,
+      "p95_waiting_periods": 2.0,
+      "mean_max_starvation": 2.0,
+      "mean_pred_high_risk_handled": 15.0,
+      "mean_true_long_handled": 9.4,
+      "mean_true_long_capture_pct": 87.3,
+      "queue_distribution_pct": {
+        "Illegal Parking": 14.8,
+        "Noise - Residential": 15.2,
+        "HEAT/HOT WATER": 7.6,
+        "Blocked Driveway": 4.4,
+        "Noise - Street/Sidewalk": 7.2,
+        "Other": 50.8
+      }
+    },
+    {
+      "policy": "Risk-First",
+      "mean_reward": 36.61,
+      "std_reward": 5.25,
+      "mean_slots_used": 50.0,
+      "mean_slot_utilization_pct": 100.0,
+      "mean_items_handled": 50.0,
+      "mean_remaining_backlog": 10.0,
+      "mean_remaining_high_risk": 0.0,
+      "mean_waiting_periods": 0.42,
+      "p95_waiting_periods": 2.22,
+      "mean_max_starvation": 6.2,
+      "mean_pred_high_risk_handled": 17.2,
+      "mean_true_long_handled": 10.6,
+      "mean_true_long_capture_pct": 100.0,
+      "queue_distribution_pct": {
+        "Illegal Parking": 10.4,
+        "Noise - Residential": 10.4,
+        "HEAT/HOT WATER": 8.8,
+        "Blocked Driveway": 2.8,
+        "Noise - Street/Sidewalk": 6.0,
+        "Other": 61.6
+      }
+    },
+    {
+      "policy": "Risk-Plus-Wait",
+      "mean_reward": 37.23,
+      "std_reward": 6.05,
+      "mean_slots_used": 50.0,
+      "mean_slot_utilization_pct": 100.0,
+      "mean_items_handled": 50.0,
+      "mean_remaining_backlog": 10.0,
+      "mean_remaining_high_risk": 2.0,
+      "mean_waiting_periods": 0.81,
+      "p95_waiting_periods": 2.31,
+      "mean_max_starvation": 2.4,
+      "mean_pred_high_risk_handled": 15.2,
+      "mean_true_long_handled": 9.2,
+      "mean_true_long_capture_pct": 85.9,
+      "queue_distribution_pct": {
+        "Illegal Parking": 14.8,
+        "Noise - Residential": 14.0,
+        "HEAT/HOT WATER": 7.6,
+        "Blocked Driveway": 4.4,
+        "Noise - Street/Sidewalk": 6.8,
+        "Other": 52.4
+      }
+    },
+    {
+      "policy": "Round-Robin",
+      "mean_reward": 28.53,
+      "std_reward": 5.68,
+      "mean_slots_used": 50.0,
+      "mean_slot_utilization_pct": 100.0,
+      "mean_items_handled": 50.0,
+      "mean_remaining_backlog": 10.0,
+      "mean_remaining_high_risk": 5.0,
+      "mean_waiting_periods": 0.7,
+      "p95_waiting_periods": 2.8,
+      "mean_max_starvation": 1.0,
+      "mean_pred_high_risk_handled": 12.2,
+      "mean_true_long_handled": 7.6,
+      "mean_true_long_capture_pct": 69.9,
+      "queue_distribution_pct": {
+        "Illegal Parking": 17.2,
+        "Noise - Residential": 17.6,
+        "HEAT/HOT WATER": 10.0,
+        "Blocked Driveway": 5.6,
+        "Noise - Street/Sidewalk": 8.0,
+        "Other": 41.6
+      }
+    }
+  ],
+  "training_reward_summary": {
+    "initial_reward": 32.65,
+    "final_reward": 32.4,
+    "mean_reward": 35.14
+  }
+}

@@ -1,0 +1,12 @@
+task,model_name,val_mae_hours,val_rmse_hours,val_r2,val_f1,val_pr_auc,val_roc_auc
+Regression,Dummy (Median),296.948,1230.409,-0.0573,,,
+Regression,Linear Regression (Raw),461.279,992.42,0.3122,,,
+Regression,Linear Regression (Log1p),234.017,968.744,0.3446,,,
+Regression,Decision Tree (Raw),481.219,1280.381,-0.1449,,,
+Regression,Decision Tree (Log1p),289.039,1217.07,-0.0345,,,
+Regression,Random Forest (Log1p),230.526,920.701,0.408,,,
+Classification,Dummy (Most Frequent),,,,0.0,0.2064,0.5
+Classification,Logistic Regression (Unweighted),,,,0.7205,0.7592,0.9401
+Classification,Logistic Regression (Balanced),,,,0.7304,0.7546,0.9396
+Classification,Decision Tree (Balanced),,,,0.5709,0.3995,0.8033
+Classification,Random Forest (Balanced),,,,0.6472,0.6933,0.9127

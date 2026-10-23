@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Complaint Scoring — CivicResolve AI{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-3">
+  <div class="col-md-8">
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-file-csv me-2 text-primary"></i>Batch Intake Scoring & Triage Prioritization</h3>
+    <p class="text-muted mb-0" style="font-size: 0.9rem;">
+      Upload a CSV of newly submitted service requests to evaluate expected resolution time and rank by long-duration delay risk.
+    </p>
+  </div>
+  <div class="col-md-4 text-md-end mt-2 mt-md-0">
+    <a href="{{ url_for('download_batch_sample') }}" class="btn btn-sm btn-outline-info">
+      <i class="fa-solid fa-download me-1"></i> Download Sample CSV
+    </a>
+  </div>
+</div>
+
+<!-- Leakage Safeguard Banner -->
+<div class="civic-alert-banner mb-4 d-flex align-items-center">
+  <i class="fa-solid fa-shield-halved fs-5 text-primary me-3"></i>
+  <div>
+    <strong>Automated Leakage Quarantine:</strong> If uploaded files contain post-resolution outcome attributes 
+    (<code>closed_date</code>, <code>status</code>, <code>resolution_description</code>, <code>resolution_hours</code>, etc.), 
+    they are automatically detected, quarantined, and stripped prior to model execution.
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Upload Card -->
+  <div class="col-lg-4">
+    <div class="civic-card p-4">
+      <h5 class="fw-bold mb-3"><i class="fa-solid fa-cloud-arrow-up me-2 text-primary"></i>Upload Intake Batch</h5>
+      
+      <form method="POST" action="{{ url_for('batch_view') }}" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label class="form-label small fw-semibold text-muted">Select CSV File (.csv)</label>
+          <input type="file" name="batch_file" class="form-control form-control-sm" accept=".csv" required>
+          <div class="form-text text-muted" style="font-size: 0.775rem;">Max file size: 5MB (up to 5,000 complaints).</div>
+        </div>
+
+        <div class="mb-3 p-3 bg-light rounded border" style="font-size: 0.8rem;">
+          <div class="fw-bold text-dark mb-1">Expected Intake Columns:</div>
+          <ul class="mb-0 ps-3 text-muted">
+            <li><strong>complaint_type</strong> (Mandatory)</li>
+            <li><strong>borough</strong> (Mandatory)</li>
+            <li>descriptor, incident_zip, open_data_channel_type</li>
+            <li>created_date or created_hour/month/weekday</li>
+            <li>latitude, longitude (Optional)</li>
+          </ul>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+          <i class="fa-solid fa-bolt me-1"></i> Score and Rank Complaints
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Results View -->
+  <div class="col-lg-8">
+    {% if results %}
+      <div class="civic-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0 text-primary"><i class="fa-solid fa-list-check me-2"></i>Scoring Summary & Priority Queue</h5>
+          <form method="POST" action="{{ url_for('export_batch_results') }}">
+            <input type="hidden" name="session_id" value="{{ batch_session_id }}">
+            <button type="submit" class="btn btn-sm btn-success">
+              <i class="fa-solid fa-file-excel me-1"></i> Download Scored CSV
+            </button>
+          </form>
+        </div>
+
+        <!-- Telemetry Summary Badges -->
+        <div class="row g-2 mb-3">
+          <div class="col-md-3 col-6">
+            <div class="p-2 border rounded bg-light text-center">
+              <div class="text-muted small">Total Processed</div>
+              <div class="fs-5 fw-bold">{{ results.total_rows }}</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="p-2 border rounded bg-light text-center">
+              <div class="text-muted small">High-Risk Alerts</div>
+              <div class="fs-5 fw-bold text-danger">{{ results.high_risk_alerts }} ({{ results.high_risk_percentage }}%)</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="p-2 border rounded bg-light text-center">
+              <div class="text-muted small">Avg Duration Est.</div>
+              <div class="fs-5 fw-bold text-primary">{{ results.mean_estimated_hours }} hrs</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="p-2 border rounded bg-light text-center">
+              <div class="text-muted small">Leakage Excluded</div>
+              <div class="fs-5 fw-bold {% if results.leakage_columns_excluded %}text-warning{% else %}text-success{% endif %}">
+                {{ results.leakage_columns_excluded | length }} cols
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% if results.leakage_columns_excluded %}
+          <div class="alert alert-warning py-2 px-3 small mb-3">
+            <i class="fa-solid fa-triangle-exclamation me-1"></i>
+            <strong>Leakage Columns Stripped:</strong> The following outcome fields were detected and quarantined before scoring:
+            <code>{{ results.leakage_columns_excluded | join(', ') }}</code>.
+          </div>
+        {% endif %}
+
+        <!-- Ranked Queue Table -->
+        <div class="table-responsive" style="max-height: 480px;">
+          <table class="table table-sm table-hover table-civic mb-0">
+            <thead class="sticky-top">
+              <tr>
+                <th>Rank</th>
+                <th>Category</th>
+                <th>Borough</th>
+                <th>Est. Duration</th>
+                <th>Delay Risk</th>
+                <th>Tier</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in results.preview_records %}
+                <tr>
+                  <td><span class="badge bg-secondary">#{{ row.review_priority_rank }}</span></td>
+                  <td>
+                    <div class="fw-semibold text-truncate" style="max-width: 180px;" title="{{ row.complaint_type }}">
+                      {{ row.complaint_type }}
+                    </div>
+                    <div class="text-muted small text-truncate" style="max-width: 180px;">{{ row.descriptor }}</div>
+                  </td>
+                  <td>{{ row.borough }}</td>
+                  <td>
+                    <div class="fw-bold">{{ row.predicted_resolution_hours }}h</div>
+                    <div class="text-muted small">{{ row.predicted_duration_label }}</div>
+                  </td>
+                  <td style="min-width: 110px;">
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>{{ (row.risk_probability * 100) | round(1) }}%</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar {% if row.risk_probability >= 0.5 %}bg-danger{% elif row.risk_probability >= 0.25 %}bg-warning{% else %}bg-success{% endif %}" {{ ('style="width: ' ~ ((row.risk_probability * 100) | round(1)) ~ '%;"') | safe }}></div>
+                    </div>
+                  </td>
+                  <td>
+                    {% if row.risk_tier == 'HIGH' %}
+                      <span class="badge badge-risk-high">HIGH</span>
+                    {% elif row.risk_tier == 'ELEVATED' %}
+                      <span class="badge badge-risk-elevated">ELEVATED</span>
+                    {% elif row.risk_tier == 'MODERATE' %}
+                      <span class="badge badge-risk-moderate">MODERATE</span>
+                    {% else %}
+                      <span class="badge badge-risk-low">LOW</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="text-muted small mt-2">Showing top 50 risk-ranked rows. Download CSV for complete dataset.</div>
+      </div>
+    {% else %}
+      <div class="civic-card p-4 text-center text-muted h-100 d-flex flex-column justify-content-center align-items-center">
+        <i class="fa-solid fa-file-excel fs-1 mb-3 text-secondary"></i>
+        <h6 class="fw-bold">No Batch Processed Yet</h6>
+        <p class="small max-w-300">
+          Upload a CSV of service requests or click "Download Sample CSV" above to test the batch scoring pipeline.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

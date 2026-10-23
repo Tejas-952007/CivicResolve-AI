@@ -1,0 +1,6 @@
+policy,mean_reward,std_reward,mean_slots_used,mean_slot_utilization_pct,mean_items_handled,mean_remaining_backlog,mean_remaining_high_risk,mean_waiting_periods,p95_waiting_periods,mean_max_starvation,mean_pred_high_risk_handled,mean_true_long_handled,mean_true_long_capture_pct,pct_Illegal Parking,pct_Noise - Residential,pct_HEAT/HOT WATER,pct_Blocked Driveway,pct_Noise - Street/Sidewalk,pct_Other
+Q-Learning,36.81,5.01,50.0,100.0,50.0,10.0,1.6,0.75,2.2,2.8,15.6,9.6,92.7,14.4,13.6,6.4,4.4,6.8,54.4
+FIFO,35.85,5.8,50.0,100.0,50.0,10.0,2.2,0.82,2.0,2.0,15.0,9.4,87.3,14.8,15.2,7.6,4.4,7.2,50.8
+Risk-First,36.61,5.25,50.0,100.0,50.0,10.0,0.0,0.42,2.22,6.2,17.2,10.6,100.0,10.4,10.4,8.8,2.8,6.0,61.6
+Risk-Plus-Wait,37.23,6.05,50.0,100.0,50.0,10.0,2.0,0.81,2.31,2.4,15.2,9.2,85.9,14.8,14.0,7.6,4.4,6.8,52.4
+Round-Robin,28.53,5.68,50.0,100.0,50.0,10.0,5.0,0.7,2.8,1.0,12.2,7.6,69.9,17.2,17.6,10.0,5.6,8.0,41.6

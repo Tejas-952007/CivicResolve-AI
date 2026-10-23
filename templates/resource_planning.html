@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Resource Planning & Q-Learning Simulation — CivicResolve AI{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-3">
+  <div class="col-md-8">
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-sliders me-2 text-primary"></i>Resource Allocation & Policy Simulation</h3>
+    <p class="text-muted mb-0" style="font-size: 0.9rem;">
+      Simulated multi-queue dispatch planning comparing Reinforcement Learning (Q-Learning) against operational baseline policies.
+    </p>
+  </div>
+  <div class="col-md-4 text-md-end mt-2 mt-md-0">
+    <a href="{{ url_for('resource_planning_export_csv') }}" class="btn btn-outline-primary btn-sm me-2">
+      <i class="fa-solid fa-download me-1"></i> Export Policy CSV
+    </a>
+    <a href="{{ url_for('download_report') }}" class="btn btn-primary btn-sm">
+      <i class="fa-solid fa-file-pdf me-1"></i> Generate PDF Report
+    </a>
+  </div>
+</div>
+
+<!-- Scientific Disclaimer Banner -->
+<div class="civic-alert-banner mb-4 d-flex align-items-start">
+  <i class="fa-solid fa-triangle-exclamation fs-5 text-warning me-3 mt-1"></i>
+  <div>
+    <strong>Research Simulation Disclosure:</strong> This simulation models capacity trade-offs across competing complaint queues under historical NYC 311 conditions.
+    <strong>It is not a deployed government policy or municipal SLA guarantee.</strong> Simulated waiting age is measured in discrete planning periods, not actual calendar days.
+    Retrospective capture of historically delayed cases demonstrates policy focus, not a causal proof that actual resolution times would have decreased.
+  </div>
+</div>
+
+<!-- Control Panel & Interactive Simulator -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-4">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold text-primary mb-3">
+        <i class="fa-solid fa-gears me-2"></i>Simulation Hyperparameters
+      </h6>
+      <form action="{{ url_for('resource_planning_run') }}" method="POST">
+        <div class="mb-2">
+          <label class="form-label small fw-semibold text-muted mb-1">Evaluation Partition</label>
+          <select name="eval_split" class="form-select form-select-sm">
+            <option value="val" {% if config.eval_split == 'val' or not config.eval_split %}selected{% endif %}>Validation Split (2024-H1)</option>
+            <option value="test" {% if config.eval_split == 'test' %}selected{% endif %}>Final Test Split (2024-H2)</option>
+          </select>
+        </div>
+
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label small fw-semibold text-muted mb-1">Capacity / Period (C)</label>
+            <input type="number" name="capacity_per_period" class="form-control form-control-sm" value="{{ config.capacity_per_period or 8 }}" min="1" max="50" required>
+            <div class="form-text small" style="font-size: 0.72rem;">Available service slots</div>
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-semibold text-muted mb-1">Horizon Periods (T)</label>
+            <input type="number" name="horizon_periods" class="form-control form-control-sm" value="{{ config.horizon_periods or 25 }}" min="5" max="100" required>
+            <div class="form-text small" style="font-size: 0.72rem;">Simulation steps</div>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label small fw-semibold text-muted mb-1">Arrival Batch (B)</label>
+            <input type="number" name="arrival_batch_size" class="form-control form-control-sm" value="{{ config.arrival_batch_size or 10 }}" min="1" max="50" required>
+            <div class="form-text small" style="font-size: 0.72rem;">Incoming items/period</div>
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-semibold text-muted mb-1">RL Episodes</label>
+            <input type="number" name="training_episodes" class="form-control form-control-sm" value="{{ config.training_episodes or 100 }}" min="10" max="500" required>
+            <div class="form-text small" style="font-size: 0.72rem;">Q-learning iterations</div>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Seed</label>
+            <input type="number" name="seed" class="form-control form-control-sm" value="{{ config.seed or 42 }}" required>
+          </div>
+          <div class="col-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Alpha (&alpha;)</label>
+            <input type="number" step="0.01" name="alpha" class="form-control form-control-sm" value="{{ config.alpha or 0.1 }}" min="0.01" max="1.0" required>
+          </div>
+          <div class="col-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Gamma (&gamma;)</label>
+            <input type="number" step="0.01" name="gamma" class="form-control form-control-sm" value="{{ config.gamma or 0.95 }}" min="0.0" max="1.0" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">
+          <i class="fa-solid fa-play me-1"></i> Re-Train & Execute Simulator
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <!-- Key Performance Highlights -->
+    <div class="row g-2 mb-3">
+      {% for s in summary %}
+        {% if s.policy == 'Q-Learning' %}
+          <div class="col-md-3 col-6">
+            <div class="p-2 border rounded bg-light text-center h-100">
+              <div class="small text-muted fw-semibold">Q-Learning Reward</div>
+              <div class="fs-5 fw-bold text-primary">{{ s.mean_reward }}</div>
+              <div class="small text-muted" style="font-size: 0.72rem;">&plusmn; {{ s.std_reward }} across seeds</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="p-2 border rounded bg-light text-center h-100">
+              <div class="small text-muted fw-semibold">Slot Utilization</div>
+              <div class="fs-5 fw-bold text-success">{{ s.mean_slot_utilization_pct }}%</div>
+              <div class="small text-muted" style="font-size: 0.72rem;">{{ s.mean_slots_used | round(0) }} slots filled</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="p-2 border rounded bg-light text-center h-100">
+              <div class="small text-muted fw-semibold">Mean Waiting Age</div>
+              <div class="fs-5 fw-bold text-dark">{{ s.mean_waiting_periods }}</div>
+              <div class="small text-muted" style="font-size: 0.72rem;">P95: {{ s.p95_waiting_periods }} periods</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="p-2 border rounded bg-light text-center h-100">
+              <div class="small text-muted fw-semibold">Long Case Capture</div>
+              <div class="fs-5 fw-bold text-danger">{{ s.mean_true_long_capture_pct }}%</div>
+              <div class="small text-muted" style="font-size: 0.72rem;">{{ s.mean_true_long_handled | round(0) }} true long handled</div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Policy Benchmark Summary Table -->
+    <div class="civic-card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0 text-dark">
+          <i class="fa-solid fa-table-list me-2 text-primary"></i>Comparative Policy Performance (Multi-Seed Mean)
+        </h6>
+        <span class="badge bg-secondary">5 Evaluation Seeds</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.82rem;">
+          <thead class="table-light">
+            <tr>
+              <th>Policy</th>
+              <th>Mean Reward</th>
+              <th>Utilization</th>
+              <th>Handled</th>
+              <th>Mean Wait</th>
+              <th>Max Starve</th>
+              <th>Pred High-Risk</th>
+              <th>True Long Capture</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in summary %}
+              <tr {% if s.policy == 'Q-Learning' %}class="table-primary fw-bold"{% endif %}>
+                <td>
+                  {% if s.policy == 'Q-Learning' %}
+                    <span class="badge bg-primary me-1">RL</span>
+                  {% elif s.policy == 'Risk-Plus-Wait' %}
+                    <span class="badge bg-info text-dark me-1">Hybrid</span>
+                  {% else %}
+                    <span class="badge bg-secondary me-1">Base</span>
+                  {% endif %}
+                  {{ s.policy }}
+                </td>
+                <td>{{ s.mean_reward }} &plusmn; {{ s.std_reward }}</td>
+                <td>{{ s.mean_slot_utilization_pct }}%</td>
+                <td>{{ s.mean_items_handled | round(0) }}</td>
+                <td>{{ s.mean_waiting_periods }}p</td>
+                <td>
+                  {% if s.mean_max_starvation >= 10 %}
+                    <span class="text-danger fw-bold">{{ s.mean_max_starvation }}p</span>
+                  {% else %}
+                    <span class="text-muted">{{ s.mean_max_starvation }}p</span>
+                  {% endif %}
+                </td>
+                <td>{{ s.mean_pred_high_risk_handled | round(1) }}</td>
+                <td>
+                  <span class="badge {% if s.mean_true_long_capture_pct >= 90 %}bg-success{% elif s.mean_true_long_capture_pct >= 80 %}bg-primary{% else %}bg-secondary{% endif %}">
+                    {{ s.mean_true_long_capture_pct }}%
+                  </span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row g-4 mb-4">
+  <!-- Chart 1: Policy Comparison Bar -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold mb-1 text-dark">
+        <i class="fa-solid fa-chart-bar me-2 text-primary"></i>Policy Objective Reward (with &plusmn;&sigma; Variability)
+      </h6>
+      <p class="small text-muted mb-2" style="font-size: 0.775rem;">
+        Composite reward balancing risk mitigation, waiting age, queue starvation, and backlog pressure.
+      </p>
+      <div id="chart-policy-reward" style="height: 320px;"></div>
+    </div>
+  </div>
+
+  <!-- Chart 2: True Long-Duration Case Capture -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold mb-1 text-dark">
+        <i class="fa-solid fa-bullseye me-2 text-danger"></i>Retrospective Long-Duration Capture Rate (%)
+      </h6>
+      <p class="small text-muted mb-2" style="font-size: 0.775rem;">
+        Percentage of historical >124.9h complaints in the arrival cohort selected by each policy.
+      </p>
+      <div id="chart-long-capture" style="height: 320px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Chart 3: Queue Fairness & Allocation Share -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold mb-1 text-dark">
+        <i class="fa-solid fa-scale-balanced me-2 text-info"></i>Queue Allocation Distribution (%)
+      </h6>
+      <p class="small text-muted mb-2" style="font-size: 0.775rem;">
+        Share of processing slots allocated across the 6 discrete complaint queues.
+      </p>
+      <div id="chart-queue-fairness" style="height: 320px;"></div>
+    </div>
+  </div>
+
+  <!-- Chart 4: Q-Learning Convergence Curve -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold mb-1 text-dark">
+        <i class="fa-solid fa-graduation-cap me-2 text-success"></i>Q-Learning Training Convergence
+      </h6>
+      <p class="small text-muted mb-2" style="font-size: 0.775rem;">
+        Episode reward trajectory with 10-episode rolling moving average over 2023 training data.
+      </p>
+      <div id="chart-training-curve" style="height: 320px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Methodology & Data Discrepancy Audit -->
+<div class="civic-card p-3 mb-4">
+  <h6 class="fw-bold text-dark mb-2">
+    <i class="fa-solid fa-book-open me-2 text-secondary"></i>Simulation Mechanics, Open-Ticket Audit, and Caveats
+  </h6>
+  <div class="accordion accordion-flush" id="simulationAuditAccordion">
+    
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingAudit">
+        <button class="accordion-button collapsed py-2 px-0 fw-semibold small text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAudit">
+          1. Open-Ticket Count Discrepancy Audit (222 vs 196)
+        </button>
+      </h2>
+      <div id="collapseAudit" class="accordion-collapse collapse" data-bs-parent="#simulationAuditAccordion">
+        <div class="accordion-body small text-muted px-0">
+          <ul class="mb-0">
+            <li><strong>222 Unresolved/Unclosed Tickets:</strong> Computed in Phase 1 & 3 as <code>total_records - (status == 'Closed' & closed_date.notna())</code>. Represents 154 non-Closed status rows plus 68 rows marked 'Closed' but lacking a closing timestamp.</li>
+            <li><strong>196 Null Closed-Date Records:</strong> Strictly rows where <code>closed_date.isna()</code>. This includes 128 non-Closed rows and 68 Closed-with-null rows.</li>
+            <li><strong>217 Excluded from Supervised Modeling:</strong> The 196 null-date rows plus 21 negative-duration entry errors.</li>
+            <li><strong>Distinction:</strong> These are historical sample anomalies from 2023–2024, not NYC's live municipal backlog.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingRL">
+        <button class="accordion-button collapsed py-2 px-0 fw-semibold small text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRL">
+          2. Tabular Q-Learning Formulation & State Representation
+        </button>
+      </h2>
+      <div id="collapseRL" class="accordion-collapse collapse" data-bs-parent="#simulationAuditAccordion">
+        <div class="accordion-body small text-muted px-0">
+          <p class="mb-1"><strong>Action Space (6 actions):</strong> Choose next slot from <code>Illegal Parking</code>, <code>Noise - Residential</code>, <code>HEAT/HOT WATER</code>, <code>Blocked Driveway</code>, <code>Noise - Street/Sidewalk</code>, or <code>Other</code>.</p>
+          <p class="mb-1"><strong>State Tuple (1,764 total bins):</strong> <code>(highest_risk_queue, oldest_queue, capacity_tier, backlog_tier, risk_pressure)</code>.</p>
+          <p class="mb-0"><strong>Reward Function:</strong> <code>r = w_risk * pred_risk + w_wait * norm_wait - w_backlog * risk_backlog - penalties</code>. Zero visibility into post-resolution duration or labels during decision steps.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Safely embed JSON payloads for Plotly -->
+<script id="data-policy-comparison" type="application/json">
+  {{ chart_policy_comparison | tojson }}
+</script>
+<script id="data-queue-shares" type="application/json">
+  {{ chart_queue_shares | tojson }}
+</script>
+<script id="data-training-rewards" type="application/json">
+  {{ training_rewards | tojson }}
+</script>
+<script id="data-smooth-rewards" type="application/json">
+  {{ smooth_rewards | tojson }}
+</script>
+
+<script>
+  // 1. Policy Reward Chart
+  const compData = JSON.parse(document.getElementById('data-policy-comparison').textContent);
+  const traceReward = {
+    x: compData.policies,
+    y: compData.rewards,
+    error_y: {
+      type: 'data',
+      array: compData.stds,
+      visible: true,
+      color: '#475569'
+    },
+    type: 'bar',
+    marker: {
+      color: ['#0284c7', '#94a3b8', '#e11d48', '#0f766e', '#f59e0b']
+    }
+  };
+  const layoutReward = {
+    margin: { l: 45, r: 25, t: 20, b: 45 },
+    yaxis: { title: 'Mean Reward Score' }
+  };
+  Plotly.newPlot('chart-policy-reward', [traceReward], layoutReward, { responsive: true, displayModeBar: false });
+
+  // 2. Long-Duration Capture Rate Chart
+  const traceCapture = {
+    x: compData.policies,
+    y: compData.capture_pct,
+    type: 'bar',
+    marker: {
+      color: ['#0369a1', '#64748b', '#dc2626', '#0d9488', '#d97706']
+    }
+  };
+  const layoutCapture = {
+    margin: { l: 45, r: 25, t: 20, b: 45 },
+    yaxis: { title: 'Capture Rate (%)', range: [0, 105] }
+  };
+  Plotly.newPlot('chart-long-capture', [traceCapture], layoutCapture, { responsive: true, displayModeBar: false });
+
+  // 3. Queue Allocation Fairness Chart
+  const queueData = JSON.parse(document.getElementById('data-queue-shares').textContent);
+  const queueTraces = queueData.queues.map((q, idx) => {
+    const palette = ['#0284c7', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#94a3b8'];
+    return {
+      x: queueData.policies,
+      y: queueData.shares[q],
+      name: q,
+      type: 'bar',
+      marker: { color: palette[idx % palette.length] }
+    };
+  });
+  const layoutQueue = {
+    barmode: 'stack',
+    margin: { l: 45, r: 25, t: 20, b: 45 },
+    yaxis: { title: 'Share of Handled Items (%)' },
+    legend: { orientation: 'h', y: -0.2 }
+  };
+  Plotly.newPlot('chart-queue-fairness', queueTraces, layoutQueue, { responsive: true, displayModeBar: false });
+
+  // 4. Training Convergence Chart
+  const rawRewards = JSON.parse(document.getElementById('data-training-rewards').textContent);
+  const smoothRewards = JSON.parse(document.getElementById('data-smooth-rewards').textContent);
+  const episodes = rawRewards.map((_, i) => i + 1);
+
+  const traceRaw = {
+    x: episodes,
+    y: rawRewards,
+    name: 'Raw Episode Reward',
+    type: 'scatter',
+    mode: 'lines',
+    line: { color: '#93c5fd', width: 1 },
+    opacity: 0.5
+  };
+  const traceSmooth = {
+    x: episodes,
+    y: smoothRewards,
+    name: '10-Episode Moving Avg',
+    type: 'scatter',
+    mode: 'lines',
+    line: { color: '#0284c7', width: 2.5 }
+  };
+  const layoutTrain = {
+    margin: { l: 45, r: 25, t: 20, b: 45 },
+    xaxis: { title: 'Training Episode' },
+    yaxis: { title: 'Episode Reward' },
+    legend: { orientation: 'h', y: 1.15 }
+  };
+  Plotly.newPlot('chart-training-curve', [traceRaw, traceSmooth], layoutTrain, { responsive: true, displayModeBar: false });
+</script>
+{% endblock %}

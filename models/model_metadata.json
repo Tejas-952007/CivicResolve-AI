@@ -1,0 +1,23 @@
+{
+  "project": "CivicResolve AI",
+  "phase": "Phase 2: Leakage-Free ML Modeling",
+  "saved_regressor": "/home/tejas/Downloads/CivicResolveAI_Starter/models/preferred_regressor.joblib",
+  "saved_classifier": "/home/tejas/Downloads/CivicResolveAI_Starter/models/preferred_classifier.joblib",
+  "input_features": [
+    "complaint_type",
+    "descriptor",
+    "borough",
+    "incident_zip",
+    "open_data_channel_type",
+    "created_month",
+    "created_hour",
+    "created_weekday",
+    "is_weekend",
+    "latitude",
+    "longitude"
+  ],
+  "long_duration_threshold_hours": 124.925,
+  "regression_test_mae_hours": 251.986,
+  "classification_test_f1": 0.7093,
+  "classification_test_recall": 0.8873
+}

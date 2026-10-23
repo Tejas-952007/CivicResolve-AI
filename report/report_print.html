@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CivicResolve AI - Final Academic Project Report</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+<style>
+@page {
+    size: A4;
+    margin: 14mm 13mm 14mm 13mm;
+    @bottom-right {
+        content: counter(page);
+    }
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+    color: #1a202c;
+    background-color: #ffffff;
+    line-height: 1.48;
+    font-size: 9.8pt;
+    margin: 0;
+    padding: 0;
+}
+
+/* Typography */
+h1 {
+    font-size: 23pt;
+    font-weight: 800;
+    color: #0f172a;
+    text-align: center;
+    margin-top: 22pt;
+    margin-bottom: 11pt;
+    letter-spacing: -0.5px;
+}
+
+h2 {
+    font-size: 14.5pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 4pt;
+    margin-top: 22pt;
+    margin-bottom: 9pt;
+    page-break-after: avoid;
+}
+
+h3 {
+    font-size: 11.8pt;
+    font-weight: 600;
+    color: #1e293b;
+    margin-top: 15pt;
+    margin-bottom: 5pt;
+    page-break-after: avoid;
+}
+
+h4 {
+    font-size: 10.8pt;
+    font-weight: 600;
+    color: #334155;
+    margin-top: 11pt;
+    margin-bottom: 4pt;
+    page-break-after: avoid;
+}
+
+p, ul, ol {
+    margin-top: 0;
+    margin-bottom: 7pt;
+    text-align: justify;
+}
+
+li {
+    margin-bottom: 3pt;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #cbd5e1;
+    margin: 20pt 0;
+}
+
+/* Blockquotes & Callouts */
+blockquote {
+    background: #f8fafc;
+    border-left: 4px solid #3b82f6;
+    margin: 12pt 0;
+    padding: 8pt 14pt;
+    font-style: italic;
+    color: #334155;
+}
+
+/* Code Blocks */
+pre {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 10pt 12pt;
+    border-radius: 6px;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    overflow-x: auto;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    margin: 10pt 0;
+    page-break-inside: avoid;
+}
+
+code {
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 1.5pt 4pt;
+    border-radius: 3px;
+    font-size: 9pt;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}
+
+pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12pt 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+}
+
+th, td {
+    border: 1px solid #cbd5e1;
+    padding: 5pt 7pt;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background-color: #f1f5f9;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+tr:nth-child(even) td {
+    background-color: #f8fafc;
+}
+
+/* Images & Figures */
+img {
+    max-width: 88%;
+    height: auto;
+    display: block;
+    margin: 8pt auto 2pt auto;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    page-break-inside: avoid;
+}
+
+em {
+    display: block;
+    text-align: center;
+    font-size: 8.5pt;
+    color: #64748b;
+    margin-bottom: 12pt;
+}
+
+.katex-display {
+    margin: 12pt 0 !important;
+    text-align: center;
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+    });
+});
+</script>
+</head>
+<body>
+<h1>CivicResolve AI: Intelligent Municipal Service Request Triage, Duration Forecasting, Pattern Discovery, and Capacity Allocation</h1>
+<p><strong>A Mini-Project Report Submitted in Partial Fulfillment of the Requirements for the Degree of</strong><br><strong>Bachelor of Engineering (B.E.) in Artificial Intelligence and Data Science</strong>  </p>
+<p><strong>Academic Year:</strong> 2026–2027<br><strong>Department:</strong> Department of Artificial Intelligence &amp; Data Science<br><strong>Institution:</strong> TODO: [Enter College Name / Savitribai Phule Pune University (SPPU) before submission]<br><strong>Candidate Name:</strong> Tejas [TODO: Enter Student Roll No. / Seat No. before submission]<br><strong>Supervisor / Guide:</strong> TODO: [Enter Project Guide Name / Internal Review Committee before submission]  </p>
+<hr>
+<h2>Executive Summary &amp; Abstract</h2>
+<p>Municipal service management systems such as 311 hotlines handle hundreds of thousands of non-emergency citizen grievances annually, spanning street repairs, noise disturbances, heating emergencies, and sanitary hazards. Traditional first-come-first-served (FIFO) ticket routing often fails to identify high-risk complaints that subsequently exceed expected resolution timelines, creating citizen dissatisfaction and administrative backlog. </p>
+<p><strong>CivicResolve AI</strong> is an end-to-end municipal operational intelligence, predictive triage, unsupervised pattern discovery, and reinforcement learning allocation system developed using open municipal 311 data from New York City (2023–2024, N = 10,000 rank-stratified records). The system implements:</p>
+<ol>
+<li><strong>Leakage-Free Predictive Modeling:</strong> Intake-time feature extraction strictly precluding post-resolution fields (<code>closed_date</code>, <code>status</code>, <code>resolution_description</code>). Evaluates regression pipelines (Random Forest Log1p achieving Test MAE 251.99 hours, Median Absolute Error 15.59 hours, and Test R² of 0.1446) and classification triage filters (Class-Balanced Logistic Regression achieving Test Recall 88.73%, Precision 59.08%, and F1 0.7093 in capturing delayed cases exceeding the empirical 124.925-hour benchmark).</li>
+<li><strong>Unsupervised Pattern Discovery:</strong> Optimal K-Means segmentation (k = 5, Silhouette Score 0.3836) clustering 274 municipality-category segments into actionable operational archetypes.</li>
+<li><strong>Interactive Local Flask Application:</strong> An operational dashboard, individual intake analysis, batch CSV scoring with target quarantine, dynamic visualizations, and automated ReportLab PDF export.</li>
+<li><strong>Tabular Q-Learning Capacity Allocation Simulator:</strong> A discrete multi-queue simulation (1,764 discrete state combinations across 6 service queues, horizon T = 10 periods, capacity C = 5 items/period, arrival batch B = 6 items/period) modeling review and dispatch trade-offs under finite capacity budgets. In rigorous multi-seed evaluation across 5 seeds (99–103), Q-learning achieved a balanced mean reward of 37.33 ± 2.69, avoiding the severe queue starvation (6.6 periods) suffered by pure Risk-First policies while outperforming static Round-Robin (31.55 ± 3.85).</li>
+<li><strong>Strict Academic and Operational Honesty:</strong> The project documents that the delay threshold (124.925 hours) is an empirical 75th percentile benchmark, not an official municipal SLA; that predictive models trained on NYC 311 data are not validated for Indian municipal corporations (such as PCMC); that heuristic Risk-Plus-Wait (39.93 ± 4.61) and FIFO (38.31 ± 4.08) achieve higher mean rewards than tabular Q-learning (37.33 ± 2.69) due to coarse state quantization; and that simulated queue wait times do not constitute causal proof of real-world resolution reductions.</li>
+</ol>
+<hr>
+<h2>Table of Contents</h2>
+<ol>
+<li><strong>Chapter 1: Problem Statement &amp; Objectives</strong><ul>
+<li>1.1 Problem Statement</li>
+<li>1.2 Motivation &amp; Industry Background</li>
+<li>1.3 Project Objectives</li>
+<li>1.4 Scope and Explicit Scientific Boundaries</li>
+</ul>
+</li>
+<li><strong>Chapter 2: Software and Hardware Requirements</strong><ul>
+<li>2.1 Software Specifications &amp; Technology Stack</li>
+<li>2.2 Hardware Environment</li>
+<li>2.3 Dependency Management &amp; Virtual Environment</li>
+</ul>
+</li>
+<li><strong>Chapter 3: Proposed Methodology</strong><ul>
+<li>3.1 Data Acquisition &amp; Stratified Temporal Sampling</li>
+<li>3.2 Target Definition &amp; Empirical Threshold Derivation</li>
+<li>3.3 Leakage-Free Preprocessing Architecture</li>
+<li>3.4 Temporal Partitioning Strategy (2023 Train / 2024-H1 Val / 2024-H2 Test)</li>
+<li>3.5 Out-of-Fold Risk Scoring for Reinforcement Learning</li>
+</ul>
+</li>
+<li><strong>Chapter 4: Architecture Design</strong><ul>
+<li>4.1 System Block Diagram</li>
+<li>4.2 Data Pipeline &amp; Service Architecture</li>
+<li>4.3 Tabular Q-Learning Simulation Architecture</li>
+</ul>
+</li>
+<li><strong>Chapter 5: Detailed System Design</strong><ul>
+<li>5.1 Intake Feature Allowlist &amp; Quarantine Contracts</li>
+<li>5.2 Supervised Model Selection &amp; Benchmark Formulations</li>
+<li>5.3 K-Means Municipality-Category Clustering Formulation</li>
+<li>5.4 Multi-Queue State Discretization &amp; Reward Formulation</li>
+</ul>
+</li>
+<li><strong>Chapter 6: Coding &amp; Implementation Details</strong><ul>
+<li>6.1 Preprocessing &amp; Cyclical Transformers (<code>src/preprocess.py</code>)</li>
+<li>6.2 Service Layer Architecture (<code>src/services/</code>)</li>
+<li>6.3 Flask Application &amp; Secure Template Embedding (<code>app.py</code>)</li>
+<li>6.4 ReportLab PDF Diagnostic Engine (<code>src/services/report_service.py</code>)</li>
+</ul>
+</li>
+<li><strong>Chapter 7: Experimental Outputs &amp; Verification Evidence</strong><ul>
+<li>7.1 Data Profiling &amp; Audit of Open-Ticket Discrepancies</li>
+<li>7.2 Supervised ML Benchmark Results (Regression &amp; Classification)</li>
+<li>7.3 K-Means Segment Archetype Findings (k = 5)</li>
+<li>7.4 Q-Learning Simulation vs Baseline Policies (Multi-Seed Comparison)</li>
+<li>7.5 Automated Test Suite Execution (45/45 Passing Tests)</li>
+<li>7.6 User Interface Verification Evidence (Screenshots &amp; Verification)</li>
+</ul>
+</li>
+<li><strong>Chapter 8: Conclusion, Limitations &amp; Future Work</strong><ul>
+<li>8.1 Summary of Contributions</li>
+<li>8.2 Defensible Academic Limitations</li>
+<li>8.3 Future Enhancements</li>
+</ul>
+</li>
+<li><strong>Chapter 9: References</strong></li>
+</ol>
+<hr>
+<h2>Chapter 1: Problem Statement &amp; Objectives</h2>
+<h3>1.1 Problem Statement</h3>
+<p>Modern municipal corporations receive millions of non-emergency 311 citizen requests regarding infrastructure, sanitation, noise, and housing. Urban dispatchers face three fundamental bottlenecks:</p>
+<ol>
+<li><strong>Intake Triage Uncertainty:</strong> At initial filing, dispatchers lack objective estimates of how long a complaint will take to resolve or whether it is at high risk of prolonged delay.</li>
+<li><strong>Data Leakage in Predictive Baselines:</strong> Naive machine learning implementations frequently incorporate post-intake fields (<code>resolution_description</code>, <code>status_change_date</code>, <code>agency_action</code>) that are unavailable at time of citizen submission, yielding artificially inflated accuracy that collapses in production.</li>
+<li><strong>Capacity Allocation Trade-offs:</strong> Municipal review teams have finite daily capacity. While prioritizing high-risk complaints is intuitive, aggressive risk-prioritization leads to severe starvation of low-risk, high-volume queues (e.g., parking, sidewalk noise), causing systemic service breakdown.</li>
+</ol>
+<h3>1.2 Motivation</h3>
+<p>Predictive civic intelligence must bridge technical rigor with public-sector responsibility. Municipal data features extreme right-skewed durations (from instant closures to months-long structural investigations), severe class imbalance, and data entry anomalies. An engineering solution must provide robust probabilistic forecasts, operational cluster archetypes, and transparent capacity simulation while maintaining scientific honesty regarding what models can and cannot guarantee.</p>
+<h3>1.3 Project Objectives</h3>
+<ol>
+<li><strong>Clean Data Ingestion:</strong> Establish a rank-stratified, multi-year temporal sampling pipeline from NYC Open Data 311 (N = 10,000 records spanning 2023–2024).</li>
+<li><strong>Leakage-Free Supervised Modeling:</strong> Construct Scikit-learn pipelines predicting resolution duration and classifying high-delay cases (&gt;124.925 hours) using strictly verified intake-time attributes.</li>
+<li><strong>Operational Pattern Clustering:</strong> Segment municipal complaint categories using PCA and K-Means clustering (k = 5) into distinct operational archetypes across 274 municipality-category segments.</li>
+<li><strong>Interactive Local Web Portal:</strong> Develop a lightweight, fully styled Flask dashboard supporting single complaint analysis, batch CSV scoring, model benchmarking, and ReportLab PDF export.</li>
+<li><strong>Reinforcement Learning Resource Allocation:</strong> Implement a tabular Q-learning simulator across 6 discrete complaint queues to evaluate trade-offs between risk mitigation, queue starvation, and capacity utilization against FIFO, Risk-First, Risk-Plus-Wait, and Round-Robin baselines.</li>
+<li><strong>Academic Defensibility:</strong> Implement and pass a 45-test automated verification suite covering data sampling, pipeline training, web routes, and reinforcement learning simulation.</li>
+</ol>
+<h3>1.4 Scope and Explicit Scientific Boundaries</h3>
+<ul>
+<li><strong>Geographic Boundary:</strong> Models are trained and tested strictly on New York City 311 data. Findings do not automatically generalize to Indian municipal corporations (such as PCMC, PMC, or BMC) without local data ingestion and workflow re-engineering.</li>
+<li><strong>Non-Causal Notice:</strong> Model predictions and feature importances reflect statistical correlations within historical routing patterns, not physical or causal root causes.</li>
+<li><strong>Benchmark vs. SLA:</strong> The 124.925-hour threshold represents the training set&#39;s empirical 75th percentile, not a statutory service-level agreement.</li>
+<li><strong>Simulation Disclaimer:</strong> The Q-learning module is a research capacity simulation; simulated waiting periods do not prove real-world duration reductions.</li>
+</ul>
+<hr>
+<h2>Chapter 2: Software and Hardware Requirements</h2>
+<h3>2.1 Software Specifications</h3>
+<ul>
+<li><strong>Operating System:</strong> Linux (Ubuntu 24.04.5 LTS, x86_64, Kernel: 6.8.0-90-generic)</li>
+<li><strong>Programming Language:</strong> Python 3.12.3</li>
+<li><strong>Web Framework:</strong> Flask 3.1.3, Werkzeug 3.1.9, Jinja2 3.1.6</li>
+<li><strong>Machine Learning &amp; Analytics:</strong> Scikit-learn 1.9.1, Pandas 3.1.0, NumPy 2.5.4, SciPy 1.18.1, Joblib 1.6.0</li>
+<li><strong>Visualization:</strong> Plotly 7.1.0, Matplotlib 3.11.2, Seaborn 0.13.2</li>
+<li><strong>Reporting Engine:</strong> ReportLab 5.1.0 (Two-pass dynamic Canvas for automated administrative PDF generation)</li>
+<li><strong>Testing &amp; Quality Assurance:</strong> Pytest 9.1.1, Google Chrome Headless, Poppler (<code>pdftotext</code>, <code>pdftoppm</code>)</li>
+<li><strong>Version Control:</strong> Git</li>
+</ul>
+<h3>2.2 Hardware Environment (Verified Test System)</h3>
+<ul>
+<li><strong>Processor:</strong> 12th Gen Intel(R) Core(TM) i7-12650H (10 physical cores: 6 Performance + 4 Efficient cores, 16 threads, base clock 2.3 GHz, up to 4.7 GHz Turbo, 1 socket)</li>
+<li><strong>Memory (RAM):</strong> 16 GB Physical RAM (15.3 GiB total system memory, SODIMM)</li>
+<li><strong>Storage:</strong> 1 TB NVMe SSD (953.9 GB <code>nvme0n1</code> high-speed storage)</li>
+<li><strong>Compute Architecture:</strong> Standard CPU multi-threaded execution (no GPU hardware acceleration utilized or required; all Scikit-learn models and tabular Q-learning simulations execute strictly on CPU).</li>
+</ul>
+<h3>2.3 Dependency Management &amp; Environment Integrity</h3>
+<p>The project is executed in an isolated Python virtual environment (<code>.venv</code>). While <code>requirements.txt</code> contains unpinned package names (<code>pandas</code>, <code>numpy</code>, <code>scikit-learn</code>, <code>flask</code>, <code>plotly</code>, <code>matplotlib</code>, <code>seaborn</code>, <code>reportlab</code>, <code>joblib</code>) to maximize portability across minor platform variations, the runtime environment was verified against the exact pinned versions listed above via <code>.venv/bin/python -m pip freeze</code>.</p>
+<hr>
+<h2>Chapter 3: Proposed Methodology</h2>
+<h3>3.1 Data Acquisition &amp; Stratified Temporal Sampling</h3>
+<p>The dataset was obtained from the New York City Open Data Socrata API for 311 Service Requests. To ensure balanced temporal representation across seasonal shifts without overwhelming local memory, a <strong>monthly rank-stratified quota sampling algorithm</strong> was executed across 24 consecutive calendar months (January 1, 2023 to December 31, 2024):</p>
+<ul>
+<li>Target Population: All 311 service requests submitted between January 1, 2023 and December 31, 2024.</li>
+<li>Target Sample: Exactly N = 10,000 rows.</li>
+<li>Monthly Allocation: 416 rows per month for 8 months and 417 rows per month for 16 months, summing to exactly 10,000 rows.</li>
+<li>Stratification: Uniform pseudo-random rank offsets per month with seed 42.</li>
+</ul>
+<h3>3.2 Target Definition &amp; Empirical Threshold Derivation</h3>
+<ul>
+<li><p><strong>Continuous Target (y_reg):</strong> Elapsed resolution duration in decimal hours:</p>
+<blockquote>
+<p><strong>Mathematical Definition:</strong><br><code>resolution_hours = (closed_date - created_date) / 3600 seconds</code></p>
+</blockquote>
+<p>Rows with negative durations (21 data entry errors where closing timestamp preceded creation timestamp) were excluded from supervised training.</p>
+</li>
+<li><p><strong>Binary Classification Target (y_cls):</strong> High-delay binary indicator (1 if resolution_hours &gt; τ, else 0).<br>The delay threshold τ = 124.925 hours (~5.2 days) was derived <strong>strictly from the 2023 training partition&#39;s 75th percentile</strong>. It was frozen and applied to all subsequent validation and test sets without recomputation.</p>
+</li>
+</ul>
+<h3>3.3 Leakage-Free Preprocessing Pipeline</h3>
+<p>Input features are restricted to intake-time variables:</p>
+<ul>
+<li><p><strong>Spatial:</strong> <code>latitude</code>, <code>longitude</code>, <code>borough</code>, <code>incident_zip</code>.</p>
+</li>
+<li><p><strong>Categorical:</strong> <code>complaint_type</code>, <code>descriptor</code>, <code>open_data_channel_type</code>.</p>
+</li>
+<li><p><strong>Cyclical Temporal:</strong> Hour of day (t in [0, 23], period T = 24) and month of year (t in [1, 12], period T = 12) transformed via custom Scikit-learn transformer:</p>
+<blockquote>
+<p><strong>Cyclical Harmonic Coordinates:</strong><br><code>x_sin = sin(2 * π * t / T),    x_cos = cos(2 * π * t / T)</code></p>
+</blockquote>
+</li>
+<li><p><strong>Categorical Handling:</strong> <code>OneHotEncoder(min_frequency=15, handle_unknown=&#39;ignore&#39;)</code> prevents dimensionality explosion and handles unseen categories safely. Missing coordinates receive median imputation fitted on training data.</p>
+</li>
+</ul>
+<h3>3.4 Temporal Partitioning Strategy</h3>
+<p>Data is partitioned strictly by calendar boundaries without random shuffling:</p>
+<ul>
+<li><strong>Training Set (2023):</strong> N = 4,827 total rows (4,711 eligible supervised records with valid non-negative durations).</li>
+<li><strong>Validation Set (2024-H1):</strong> N = 2,473 total rows (2,437 eligible supervised records).</li>
+<li><strong>Final Test Set (2024-H2):</strong> N = 2,700 total rows (2,635 eligible supervised records).</li>
+<li><strong>Total:</strong> Exactly 10,000 sample rows, yielding 9,783 eligible supervised records and 217 exclusions (196 missing closed dates and 21 negative duration logging errors).</li>
+</ul>
+<hr>
+<h2>Chapter 4: Architecture Design</h2>
+<h3>4.1 System Block Diagram</h3>
+<p><img src="screenshots/architecture_diagram.png" alt="Figure 4.1: CivicResolve AI System Architecture Diagram">
+<em>Figure 4.1: End-to-end CivicResolve AI system architecture spanning stratified temporal sampling, leakage-free feature pipelines, supervised models, unsupervised K-Means archetyping, tabular Q-learning capacity allocation simulation, and the interactive Flask web service layer.</em></p>
+<h3>4.2 Data Pipeline &amp; Service Layer</h3>
+<p>The codebase adheres to service-oriented separation of concerns:</p>
+<ul>
+<li><code>src/features.py</code>: Feature contracts, allowlists, and temporal partitioning.</li>
+<li><code>src/preprocess.py</code>: ColumnTransformer, median imputers, cyclical transformers.</li>
+<li><code>src/services/analytics_service.py</code>: KPI computation and aggregation.</li>
+<li><code>src/services/prediction_service.py</code>: Model loading, single/batch prediction.</li>
+<li><code>src/services/clustering_service.py</code>: Silhouette scoring, PCA, and cluster profiles.</li>
+<li><code>src/services/rl_simulation_service.py</code>: Discrete environment, Q-learning agent, and multi-seed evaluator.</li>
+<li><code>src/services/report_service.py</code>: Two-pass PDF generation with simulation appendix.</li>
+</ul>
+<hr>
+<h2>Chapter 5: Detailed System Design</h2>
+<h3>5.1 Intake Feature Contract &amp; Quarantine Rules</h3>
+<p>Any post-resolution or target-derived attribute present in uploaded CSV files is immediately quarantined into an unverified container and barred from model inference:
+<code>EXCLUDED_POST_RESOLUTION_FIELDS = [&quot;unique_key&quot;, &quot;closed_date&quot;, &quot;status&quot;, &quot;resolution_description&quot;, &quot;resolution_hours&quot;, &quot;target_long_duration&quot;, &quot;closed_dt_local&quot;]</code>.</p>
+<h3>5.2 Supervised Model Benchmarks</h3>
+<ul>
+<li><strong>Regression:</strong> Compares Dummy Median, Linear Regression (Raw), Ridge (Log1p), Decision Tree, and Random Forest (Log1p).
+Target transform (log1p): <code>z = log(1 + y)</code>; inverse transform (expm1): <code>y_hat = exp(z_hat) - 1</code>.</li>
+<li><strong>Classification:</strong> Compares Dummy Most-Frequent, Logistic Regression (Unweighted), Logistic Regression (Class-Balanced), Decision Tree (Balanced), and Random Forest (Balanced).</li>
+</ul>
+<h3>5.3 K-Means Municipality-Category Clustering Formulation</h3>
+<p>Municipal complaint records are aggregated retrospectively by <code>(complaint_type, borough)</code> into 274 municipality-category segments (filtering segments with fewer than 5 records to ensure statistical stability). While the K-Means clustering algorithm itself is unsupervised, the input features contain historical outcome-derived aggregates. These clusters represent retrospective descriptive operational profiles, not intake-time predictions, root causes, or causal findings:</p>
+<ul>
+<li>Total request volume (<code>request_count</code>)</li>
+<li>Median resolution duration in hours (<code>median_resolution_hours</code>)</li>
+<li>Long-duration complaint share exceeding 124.925 hours (<code>long_duration_share</code>)</li>
+<li>Open/unresolved ticket ratio (<code>open_case_share</code>)</li>
+<li>Weekend filing proportion (<code>weekend_share</code>)</li>
+</ul>
+<p>Features are standardized via StandardScaler. Model selection evaluates cluster counts k in [2, 5] using the silhouette coefficient:</p>
+<ul>
+<li>k = 2: Silhouette Score = 0.3119</li>
+<li>k = 3: Silhouette Score = 0.3232</li>
+<li>k = 4: Silhouette Score = 0.3392</li>
+<li>k = 5: Silhouette Score = 0.3836 (Optimal selection criterion)</li>
+</ul>
+<h3>5.4 Multi-Queue State Discretization &amp; Reward Formulation</h3>
+<ul>
+<li><p><strong>Queues (K = 6):</strong> <code>Illegal Parking</code>, <code>Noise - Residential</code>, <code>HEAT/HOT WATER</code>, <code>Blocked Driveway</code>, <code>Noise - Street/Sidewalk</code>, <code>Other</code>.</p>
+</li>
+<li><p><strong>State Tuple:</strong> <code>(highest_risk_queue, oldest_queue, capacity_tier, backlog_tier, risk_pressure)</code> yielding 1,764 discrete state combinations.</p>
+</li>
+<li><p><strong>Bellman Equation:</strong></p>
+<blockquote>
+<p><strong>Q-Value Bellman Update:</strong><br><code>Q(s, a) &lt;- Q(s, a) + alpha * [ r + gamma * max_a&#39; Q(s&#39;, a&#39;) - Q(s, a) ]</code><br>Hyperparameters: learning rate alpha = 0.10, discount factor gamma = 0.95, exploration decay epsilon from 1.0 to 0.05.</p>
+</blockquote>
+</li>
+<li><p><strong>Human-Engineered Step Reward Formulation:</strong> The reinforcement learning agent learns an action policy under a human-designed composite reward function balancing triage risk, customer waiting, and system-wide backlogs:</p>
+<blockquote>
+<p><strong>Composite Step Reward Function:</strong><br><code>r = w_risk * pred_risk + w_wait * norm_wait - w_backlog * risk_backlog - penalties</code><br><strong>Manually Selected Weights:</strong> w_risk = 2.0 (triage risk priority), w_wait = 1.0 (waiting time penalty weight), w_backlog = 0.15 (system-wide backlog penalty weight); empty-queue penalty = 0.5, starvation penalty = 0.4 (applied if any queue is neglected for &gt; 3 consecutive periods).</p>
+</blockquote>
+</li>
+</ul>
+<hr>
+<h2>Chapter 6: Coding &amp; Implementation Details</h2>
+<h3>6.1 Custom Cyclical Feature Transformer (<code>src/preprocess.py</code>)</h3>
+<pre><code class="language-python">class CyclicFeatureTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self, periods: dict[str, float] | None = None) -&gt; None:
+        self.periods = periods or {&quot;created_hour&quot;: 24.0, &quot;created_month&quot;: 12.0}
+
+    def fit(self, X: pd.DataFrame | np.ndarray, y: Any = None) -&gt; CyclicFeatureTransformer:
+        self.is_fitted_ = True
+        return self
+
+    def transform(self, X: pd.DataFrame | np.ndarray) -&gt; np.ndarray:
+        df = X.copy() if isinstance(X, pd.DataFrame) else pd.DataFrame(X, columns=list(self.periods.keys()))
+        outputs = []
+        for col, period in self.periods.items():
+            vals = df[col].astype(float).values
+            outputs.append(np.sin(2.0 * np.pi * vals / period).reshape(-1, 1))
+            outputs.append(np.cos(2.0 * np.pi * vals / period).reshape(-1, 1))
+        return np.hstack(outputs)
+</code></pre>
+<h3>6.2 Safe JSON Template Integration</h3>
+<p>To prevent syntax errors in IDE language services and protect against script injection, all server data passed into Plotly charts is embedded using <code>&lt;script type=&quot;application/json&quot;&gt;</code> elements and parsed via <code>JSON.parse(document.getElementById(...).textContent)</code>.</p>
+<hr>
+<h2>Chapter 7: Experimental Outputs &amp; Verification Evidence</h2>
+<h3>7.1 Data Profiling &amp; Audit of Status, Timestamps, and Backlog Counts</h3>
+<p>To eliminate ambiguity across operational dashboards, administrative PDF reports, and supervised modeling pipelines, the canonical 10,000-record dataset definitions are reconciled as follows:</p>
+<ul>
+<li><strong>Total Canonical Sample Records:</strong> Exactly 10,000 records.</li>
+<li><strong>Recorded Categorical Status Breakdown:</strong> <code>Closed</code>: 9,846; <code>In Progress</code>: 109; <code>Pending</code>: 24; <code>Open</code>: 11; <code>Assigned</code>: 7; <code>Started</code>: 2; <code>Unspecified</code>: 1 (Total non-Closed recorded status: 154 records).</li>
+<li><strong>Timestamp Completeness:</strong> 9,804 records possess a non-null <code>closed_date</code>; 196 records have missing closing timestamps.</li>
+<li><strong>Closed Status with Valid Closing Timestamp:</strong> Exactly 9,778 records are marked <code>Closed</code> with a non-null closing timestamp. (68 records marked <code>Closed</code> in the source database lack a closing timestamp: 9,846 - 9,778 = 68).</li>
+<li><strong>Unresolved / Unclosed Backlog Metric (N = 222):</strong> The administrative dashboard backlog KPI combines the 154 active non-Closed status records with the 68 records marked <code>Closed</code> that lack completion timestamps (154 + 68 = 222).</li>
+<li><strong>Service-Eligible Closed Records (N = 9,777):</strong> Records with recorded <code>Closed</code> status, non-null <code>closed_date</code>, and non-negative resolution duration (<code>resolution_hours &gt;= 0</code>). Exactly 1 record has a data entry error where closing preceded creation (<code>resolution_hours = -11.97</code>), yielding 9,777 service-eligible closed records. The sample median resolution duration is 23.9 hours, and 2,444 records exceed the 124.925-hour delay benchmark (representing exactly 25.0% of the 9,777 service-eligible closed population).</li>
+<li><strong>Supervised Modeling Eligible Records (N = 9,783):</strong> Intake-to-resolution duration modeling requires valid timestamps and non-negative durations (<code>closed_date.notna()</code> &amp; <code>resolution_hours &gt;= 0</code>). This population comprises 9,777 closed records plus 6 non-closed tickets that recorded valid completion timestamps and non-negative durations (9,777 + 6 = 9,783).</li>
+<li><strong>Supervised Exclusions (N = 217):</strong> Exactly 196 tickets with null closing timestamps plus 21 tickets with negative duration logging errors (196 + 21 = 217 exclusions; 10,000 - 217 = 9,783 eligible records). Partitioned chronologically into Training (2023: N = 4,711), Validation (2024-H1: N = 2,437), and Held-Out Test (2024-H2: N = 2,635).</li>
+</ul>
+<h3>7.2 Supervised ML Benchmark Results</h3>
+<h4>Table 7.1: Supervised Model Performance on Held-Out Test Set (2024-H2)</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Pipeline</th>
+<th align="left">Task</th>
+<th align="left">Metric 1</th>
+<th align="left">Metric 2</th>
+<th align="left">Metric 3</th>
+<th align="left">Assessment</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Random Forest (Log1p)</strong></td>
+<td align="left">Regression</td>
+<td align="left"><strong>MAE: 251.99 hours</strong></td>
+<td align="left">MedAE: 15.59 hours</td>
+<td align="left">R²: 0.1446</td>
+<td align="left">Typical absolute error ~15.6 hours; heavy right tail expands MAE.</td>
+</tr>
+<tr>
+<td align="left"><strong>Ridge Regression (Log1p)</strong></td>
+<td align="left">Regression</td>
+<td align="left">MAE: 267.42 hours</td>
+<td align="left">MedAE: 22.18 hours</td>
+<td align="left">R²: 0.0892</td>
+<td align="left">Baseline linear shrinkage underperforms Random Forest.</td>
+</tr>
+<tr>
+<td align="left"><strong>Logistic Regression (Balanced)</strong></td>
+<td align="left">Classification</td>
+<td align="left"><strong>Recall: 88.73%</strong></td>
+<td align="left">Precision: 59.08%</td>
+<td align="left"><strong>F1: 0.7093</strong></td>
+<td align="left">Identified 488 of 550 delayed requests (338 false-positive alerts).</td>
+</tr>
+<tr>
+<td align="left"><strong>Random Forest (Balanced)</strong></td>
+<td align="left">Classification</td>
+<td align="left">Recall: 81.27%</td>
+<td align="left">Precision: 63.85%</td>
+<td align="left">F1: 0.7153</td>
+<td align="left">Higher precision but lower screening recall.</td>
+</tr>
+</tbody></table>
+<p><em>Confusion Matrix (Logistic Regression Balanced, Test Set):</em></p>
+<ul>
+<li>True Negatives: 1,747 | False Positives: 338</li>
+<li>False Negatives: 62 | True Positives: 488</li>
+<li>ROC-AUC: 0.9262 | PR-AUC: 0.7227 (vs 0.2087 no-skill baseline)</li>
+</ul>
+<h3>7.3 K-Means Segment Archetype Findings (k = 5, Silhouette: 0.3836)</h3>
+<p>Evaluated across 274 municipality-category segments:</p>
+<ol>
+<li><strong>Cluster 0: High-Volume Rapid Municipal Dispatch</strong> (14 segments, 5.1% share): Average 250.6 requests/segment, median duration 9.4 hours, delay rate 0.2% (Top categories: Illegal Parking, Noise - Residential, HEAT/HOT WATER).</li>
+<li><strong>Cluster 1: Moderate-Volume Routine Maintenance</strong> (129 segments, 47.1% share): Average 24.8 requests/segment, median duration 22.2 hours, delay rate 7.5% (Top categories: Abandoned Vehicle, Dirty Condition, Noise - Commercial).</li>
+<li><strong>Cluster 2: Multi-Month Capital &amp; Forestry Programs</strong> (8 segments, 2.9% share): Average 16.2 requests/segment, median duration 8,903.9 hours (~1 year), delay rate 100.0% (Top categories: New Tree Request, Food Establishment, Mobile Food Vendor).</li>
+<li><strong>Cluster 3: Backlog-Prone / Specialized Operations</strong> (16 segments, 5.8% share): Average 20.6 requests/segment, median duration 517.3 hours, open backlog share 26.9%, delay rate 53.0% (Top categories: Damaged Tree, Dead/Dying Tree, Noise - Helicopter).</li>
+<li><strong>Cluster 4: Complex Residential Code Enforcement</strong> (107 segments, 39.1% share): Average 22.0 requests/segment, median duration 495.8 hours, delay rate 62.0% (Top categories: UNSANITARY CONDITION, APPLIANCE, DOOR/WINDOW).</li>
+</ol>
+<h3>7.4 Q-Learning Simulation vs Baseline Policies</h3>
+<h4>Table 7.2: Canonical Multi-Seed Simulation Comparison (Validation Partition 2024-H1, 5 Evaluation Seeds: 99–103, T = 10, C = 5, B = 6)</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Policy</th>
+<th align="center">Mean Reward ± Std</th>
+<th align="center">Slot Util %</th>
+<th align="center">Handled Items</th>
+<th align="center">Mean Wait (periods)</th>
+<th align="center">Max Starvation (periods)</th>
+<th align="center">True Long Capture %</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Risk-Plus-Wait</strong></td>
+<td align="center"><strong>39.93 ± 4.61</strong></td>
+<td align="center">100.0%</td>
+<td align="center">50.0</td>
+<td align="center">0.81</td>
+<td align="center">2.4</td>
+<td align="center">86.0%</td>
+</tr>
+<tr>
+<td align="left"><strong>FIFO</strong></td>
+<td align="center">38.31 ± 4.08</td>
+<td align="center">100.0%</td>
+<td align="center">50.0</td>
+<td align="center">0.82</td>
+<td align="center">1.8</td>
+<td align="center">83.4%</td>
+</tr>
+<tr>
+<td align="left"><strong>Risk-First</strong></td>
+<td align="center">38.31 ± 4.82</td>
+<td align="center">100.0%</td>
+<td align="center">50.0</td>
+<td align="center"><strong>0.47</strong></td>
+<td align="center">6.6</td>
+<td align="center"><strong>98.8%</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>Q-Learning</strong></td>
+<td align="center">37.33 ± 2.69</td>
+<td align="center">100.0%</td>
+<td align="center">50.0</td>
+<td align="center">0.78</td>
+<td align="center">2.4</td>
+<td align="center">82.2%</td>
+</tr>
+<tr>
+<td align="left"><strong>Round-Robin</strong></td>
+<td align="center">31.55 ± 3.85</td>
+<td align="center">100.0%</td>
+<td align="center">50.0</td>
+<td align="center">0.67</td>
+<td align="center"><strong>1.0</strong></td>
+<td align="center">72.6%</td>
+</tr>
+</tbody></table>
+<h4>Academic Discussion of Results:</h4>
+<ul>
+<li><p><strong>Q-Learning Ranking:</strong> Heuristic Risk-Plus-Wait achieved the highest mean step reward (39.93 ± 4.61), followed by FIFO (38.31 ± 4.08) and Risk-First (38.31 ± 4.82). Tabular Q-learning achieved 37.33 ± 2.69 and is not the top-performing policy on the mean reward metric.</p>
+</li>
+<li><p><strong>Quantization Penalty:</strong> In tabular reinforcement learning, discretizing continuous queue state variables into coarse bins (1,764 combinations) creates quantization loss compared to fine-grained continuous priority weighting (<code>Risk-Plus-Wait</code>).</p>
+</li>
+<li><p><strong>Policy Balance &amp; Robustness:</strong> The Q-learning agent learns an action policy under a human-designed composite reward function with manually configured weights. It demonstrated the lowest standard deviation across seeds (2.69), avoided severe starvation (2.4 periods vs 6.6 periods for pure Risk-First), and learned an effective multi-queue dispatch policy outperforming static Round-Robin (31.55 ± 3.85).</p>
+</li>
+<li><p><strong>Retrospective True Long-Duration Capture Formulation:</strong></p>
+<blockquote>
+<p><strong>High-Risk Capture Rate Formula:</strong><br><code>Capture Rate = (Handled Delayed Tickets / Total Delayed Arrival Cohort Tickets) * 100%</code><br><em>(where Delayed Tickets are those with historical resolution duration &gt; 124.925 hours)</em></p>
+</blockquote>
+<p>This is a diagnostic metric evaluated strictly over historically resolved tickets within the simulated cohort; simulated results do not constitute causal proof of real-world municipal delay reduction.</p>
+</li>
+</ul>
+<h3>7.5 Automated Test Suite Execution</h3>
+<p>Verification via <code>pytest tests/ -v</code> executed during Phase 5.2 confirmed:</p>
+<pre><code class="language-text">tests/test_phase1.py .........                               [ 20%]
+tests/test_phase2.py ..........                              [ 42%]
+tests/test_phase3.py ............                            [ 68%]
+tests/test_phase4.py ..............                          [100%]
+============================= 45 passed in 25.23s =============================
+</code></pre>
+<h3>7.6 User Interface Verification Evidence</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Interface</th>
+<th align="left">Route</th>
+<th align="left">Screenshot Evidence</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Overview Dashboard</strong></td>
+<td align="left"><code>/dashboard</code></td>
+<td align="left"><code>report/screenshots/01_dashboard.png</code></td>
+<td align="left">Volume KPIs (10,000 total, 222 backlog), monthly trends, borough delays.</td>
+</tr>
+<tr>
+<td align="left"><strong>Single Analysis</strong></td>
+<td align="left"><code>/predict</code></td>
+<td align="left"><code>report/screenshots/02_individual_prediction.png</code></td>
+<td align="left">Intake form, expected hours (81.89h), delay risk (20.4%).</td>
+</tr>
+<tr>
+<td align="left"><strong>Batch CSV Scoring</strong></td>
+<td align="left"><code>/batch</code></td>
+<td align="left"><code>report/screenshots/03_batch_csv_scoring.png</code></td>
+<td align="left">Scored priority queue, risk-tier badges, quarantined fields banner.</td>
+</tr>
+<tr>
+<td align="left"><strong>Model Evaluation</strong></td>
+<td align="left"><code>/evaluation</code></td>
+<td align="left"><code>report/screenshots/04_model_evaluation.png</code></td>
+<td align="left">Test confusion matrix, PR/ROC curves, feature ranking.</td>
+</tr>
+<tr>
+<td align="left"><strong>Pattern Discovery</strong></td>
+<td align="left"><code>/clustering</code></td>
+<td align="left"><code>report/screenshots/05_kmeans_clustering.png</code></td>
+<td align="left">2D PCA cluster scatter plot (k = 5, 55.7% variance), archetype table.</td>
+</tr>
+<tr>
+<td align="left"><strong>Resource Planning</strong></td>
+<td align="left"><code>/resource-planning</code></td>
+<td align="left"><code>report/screenshots/06_resource_planning.png</code></td>
+<td align="left">Canonical benchmark table (37–40 rewards), comparative bar charts.</td>
+</tr>
+<tr>
+<td align="left"><strong>Diagnostic PDF</strong></td>
+<td align="left"><code>/report/download</code></td>
+<td align="left"><code>report/screenshots/07_pdf_report-1.png</code></td>
+<td align="left">Multi-page ReportLab PDF export with simulation appendix.</td>
+</tr>
+</tbody></table>
+<h4>Visual Evidence Gallery</h4>
+<p><img src="screenshots/01_dashboard.png" alt="Figure 7.1: Overview Municipal Dashboard">
+<em>Figure 7.1: Overview Municipal Dashboard (<code>/dashboard</code>) displaying key volume KPIs, borough delays, and distribution trends.</em></p>
+<p><img src="screenshots/02_individual_prediction.png" alt="Figure 7.2: Single Complaint Prediction Form">
+<em>Figure 7.2: Single Complaint Prediction (<code>/predict</code>) showing intake-time features and dual inference outcomes.</em></p>
+<p><img src="screenshots/03_batch_csv_scoring.png" alt="Figure 7.3: Batch CSV Scoring Interface">
+<em>Figure 7.3: Batch CSV Scoring (<code>/batch</code>) showing uploadDropzone, scoring summary, and prioritized triage queue.</em></p>
+<p><img src="screenshots/04_model_evaluation.png" alt="Figure 7.4: ML Model Evaluation Interface">
+<em>Figure 7.4: Model Evaluation Dashboard (<code>/evaluation</code>) displaying test metrics, confusion matrix, and feature association.</em></p>
+<p><img src="screenshots/05_kmeans_clustering.png" alt="Figure 7.5: Unsupervised K-Means Pattern Discovery">
+<em>Figure 7.5: K-Means Clustering (<code>/clustering</code>) with PCA 2D scatter visualization and operational archetype descriptions.</em></p>
+<p><img src="screenshots/06_resource_planning.png" alt="Figure 7.6: Reinforcement Learning Resource Planning Simulator">
+<em>Figure 7.6: Resource Planning Simulator (<code>/resource-planning</code>) showing multi-policy evaluation and Q-learning metrics.</em></p>
+<p><img src="screenshots/07_pdf_report-1.png" alt="Figure 7.7: Automated Diagnostic Report PDF Page 1">
+<em>Figure 7.7: Multi-page Diagnostic PDF Report (<code>/report/download</code>) generated via ReportLab.</em></p>
+<hr>
+<h2>Chapter 8: Conclusion, Limitations &amp; Future Work</h2>
+<h3>8.1 Summary of Contributions</h3>
+<p>CivicResolve AI demonstrates that municipal complaint management can be substantially enhanced through leakage-free machine learning, unsupervised pattern segmentation, and reinforcement learning capacity planning. The project bridges the gap between theoretical modeling and public administration realities.</p>
+<h3>8.2 Defensible Academic Limitations</h3>
+<ol>
+<li><strong>No Causal Guarantee:</strong> Feature associations do not prove physical causality; routing adjustments cannot guarantee real-world duration drops without operational field trials.</li>
+<li><strong>Context Specificity:</strong> Models trained on New York City data cannot be directly deployed in Indian municipalities (e.g., PCMC) due to distinct administrative hierarchies, complaint typologies, and regional reporting channels.</li>
+<li><strong>Tabular Discretization:</strong> The Q-learning agent uses coarse state bins (1,764 combinations), which limits micro-item optimization compared to continuous heuristic sorting.</li>
+</ol>
+<h3>8.3 Future Enhancements</h3>
+<ul>
+<li>Fine-tuning local language (Marathi/Hindi) intake NLP for Indian municipal corporations.</li>
+<li>Deep Q-Networks (DQN) or Proximal Policy Optimization (PPO) for continuous state spaces.</li>
+<li>Real-time GPS vehicle routing integration for municipal field crews.</li>
+</ul>
+<hr>
+<h2>Chapter 9: References</h2>
+<ol>
+<li><strong>City of New York (2024).</strong> <em>311 Service Requests from 2010 to Present.</em> NYC Open Data. <a href="https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9">https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9</a></li>
+<li><strong>Pedregosa, F., et al. (2011).</strong> <em>Scikit-learn: Machine Learning in Python.</em> Journal of Machine Learning Research, 12, 2825–2830. <a href="https://scikit-learn.org/">https://scikit-learn.org/</a></li>
+<li><strong>Sutton, R. S., &amp; Barto, A. G. (2018).</strong> <em>Reinforcement Learning: An Introduction.</em> MIT Press, Cambridge, MA. <a href="http://incompleteideas.net/book/the-book-2nd.html">http://incompleteideas.net/book/the-book-2nd.html</a></li>
+<li><strong>Grinsztajn, L., Oyallon, E., &amp; Varoquaux, G. (2022).</strong> <em>Why do tree-based models still outperform deep learning on tabular data?</em> Advances in Neural Information Processing Systems (NeurIPS). <a href="https://arxiv.org/abs/2207.08815">https://arxiv.org/abs/2207.08815</a></li>
+<li><strong>Rousseeuw, P. J. (1987).</strong> <em>Silhouettes: A graphical aid to the interpretation and validation of cluster analysis.</em> Journal of Computational and Applied Mathematics, 20, 53–65. <a href="https://doi.org/10.1016/0377-0427(87)90125-7">https://doi.org/10.1016/0377-0427(87)90125-7</a></li>
+<li><strong>ReportLab Europe Ltd. (2024).</strong> <em>ReportLab PDF Generation User Guide.</em> <a href="https://www.reportlab.com/documentation/">https://www.reportlab.com/documentation/</a></li>
+<li><strong>Flask Community (2024).</strong> <em>Pallets: Flask Web Development.</em> <a href="https://flask.palletsprojects.com/">https://flask.palletsprojects.com/</a></li>
+</ol>
+
+
+</body>
+</html>

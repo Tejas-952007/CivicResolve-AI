@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Overview Dashboard — CivicResolve AI{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-3">
+  <div class="col-md-8">
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-chart-pie me-2 text-primary"></i>Municipal Service Demand Dashboard</h3>
+    <p class="text-muted mb-0" style="font-size: 0.9rem;">
+      Descriptive telemetry, service-level velocity, and backlog analysis from the 10,000-record NYC 311 historical sample.
+    </p>
+  </div>
+  <div class="col-md-4 text-md-end mt-2 mt-md-0">
+    <a href="{{ url_for('export_filtered_csv', borough=selected_borough, complaint_type=selected_complaint_type, start_date=selected_start_date, end_date=selected_end_date) }}" download="civicresolve_filtered_sample.csv" class="btn btn-sm btn-outline-secondary me-2">
+      <i class="fa-solid fa-file-csv me-1"></i> Export Filtered CSV
+    </a>
+    <a href="{{ url_for('download_report', borough=selected_borough, complaint_type=selected_complaint_type, start_date=selected_start_date, end_date=selected_end_date) }}" download="CivicResolve_AI_Diagnostic_Report.pdf" class="btn btn-sm btn-primary">
+      <i class="fa-solid fa-file-pdf me-1"></i> Generate PDF
+    </a>
+  </div>
+</div>
+
+<!-- Notice Banner -->
+<div class="civic-alert-banner mb-3 d-flex align-items-center">
+  <i class="fa-solid fa-circle-exclamation fs-5 text-primary me-3"></i>
+  <div>
+    <strong>Academic Sample Disclosure:</strong> All descriptive metrics are calculated strictly from the local 10,000-record stratified sample. 
+    Closed tickets with valid timestamps form the eligible duration basis ($N=9,783$). Statistics represent this sample rather than exact citywide census counts.
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar mb-4">
+  <form method="GET" action="{{ url_for('dashboard_view') }}" class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label small fw-semibold text-muted mb-1">Borough</label>
+      <select name="borough" class="form-select form-select-sm">
+        <option value="ALL" {% if selected_borough == 'ALL' %}selected{% endif %}>All Boroughs</option>
+        {% for b in filter_options.boroughs %}
+          <option value="{{ b }}" {% if selected_borough == b %}selected{% endif %}>{{ b }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small fw-semibold text-muted mb-1">Complaint Category</label>
+      <select name="complaint_type" class="form-select form-select-sm">
+        <option value="ALL" {% if selected_complaint_type == 'ALL' %}selected{% endif %}>All Categories</option>
+        {% for ct in filter_options.complaint_types %}
+          <option value="{{ ct }}" {% if selected_complaint_type == ct %}selected{% endif %}>{{ ct }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small fw-semibold text-muted mb-1">From Date</label>
+      <input type="date" name="start_date" class="form-control form-control-sm" value="{{ selected_start_date }}" min="{{ filter_options.min_date }}" max="{{ filter_options.max_date }}">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small fw-semibold text-muted mb-1">To Date</label>
+      <input type="date" name="end_date" class="form-control form-control-sm" value="{{ selected_end_date }}" min="{{ filter_options.min_date }}" max="{{ filter_options.max_date }}">
+    </div>
+    <div class="col-md-2 d-flex gap-1">
+      <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
+        <i class="fa-solid fa-filter me-1"></i> Apply
+      </button>
+      <a href="{{ url_for('dashboard_view') }}" class="btn btn-sm btn-outline-secondary" title="Reset Filters">
+        <i class="fa-solid fa-rotate-left"></i>
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-2 col-sm-6">
+    <div class="kpi-card p-3">
+      <div class="kpi-label">Filtered Volume</div>
+      <div class="kpi-value">{{ kpis.total_records | format_number }}</div>
+      <div class="kpi-subtext text-muted">Of 10,000 total records</div>
+    </div>
+  </div>
+  <div class="col-md-2 col-sm-6">
+    <div class="kpi-card p-3">
+      <div class="kpi-label">Open / Backlog</div>
+      <div class="kpi-value text-warning">{{ kpis.open_count | format_number }}</div>
+      <div class="kpi-subtext text-muted">{{ kpis.closed_count | format_number }} closed tickets</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card p-3">
+      <div class="kpi-label">Median Duration</div>
+      <div class="kpi-value text-primary">{{ kpis.median_resolution_hours }}h</div>
+      <div class="kpi-subtext text-muted">Approx. {{ kpis.median_resolution_days }} days</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card p-3">
+      <div class="kpi-label">Long Delay Rate</div>
+      <div class="kpi-value text-danger">{{ kpis.long_duration_share }}%</div>
+      <div class="kpi-subtext text-muted">&gt;124.9h benchmark ({{ kpis.long_duration_count }})</div>
+    </div>
+  </div>
+  <div class="col-md-2 col-sm-6">
+    <div class="kpi-card p-3">
+      <div class="kpi-label">Immediate (0h)</div>
+      <div class="kpi-value text-info">{{ kpis.zero_duration_count }}</div>
+      <div class="kpi-subtext text-muted">Quick cancellations/calls</div>
+    </div>
+  </div>
+</div>
+
+<!-- Plotly Charts Grid -->
+<div class="row g-3 mb-4">
+  <!-- Chart 1: Monthly Trends -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="fa-solid fa-chart-line text-primary me-2"></i>Monthly Volume & Median Duration Trend</h6>
+        <span class="badge bg-light text-secondary border">2023–2024</span>
+      </div>
+      <div id="chart-monthly-trend" style="height: 320px;"></div>
+    </div>
+  </div>
+
+  <!-- Chart 2: Top Categories -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="fa-solid fa-ranking-star text-info me-2"></i>Top 10 Categories & Median Resolution</h6>
+        <span class="badge bg-light text-secondary border">Filtered Slice</span>
+      </div>
+      <div id="chart-top-categories" style="height: 320px;"></div>
+    </div>
+  </div>
+
+  <!-- Chart 3: Borough Breakdown -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="fa-solid fa-map-location-dot text-success me-2"></i>Borough Volume vs. Long Delay Share</h6>
+        <span class="badge bg-light text-secondary border">Jurisdiction Comparison</span>
+      </div>
+      <div id="chart-boroughs" style="height: 320px;"></div>
+    </div>
+  </div>
+
+  <!-- Chart 4: Duration Distribution -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="fa-solid fa-clock-rotate-left text-warning me-2"></i>Resolution Duration Distribution</h6>
+        <span class="badge bg-light text-secondary border">Operational Bins</span>
+      </div>
+      <div id="chart-duration-dist" style="height: 320px;"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script id="data-monthly-trends" type="application/json">{{ monthly_trends | tojson }}</script>
+<script id="data-top-categories" type="application/json">{{ top_categories | tojson }}</script>
+<script id="data-borough-breakdown" type="application/json">{{ borough_breakdown | tojson }}</script>
+<script id="data-duration-dist" type="application/json">{{ duration_distribution | tojson }}</script>
+<script>
+  // 1. Monthly Trends Chart
+  const monthlyData = JSON.parse(document.getElementById('data-monthly-trends').textContent);
+  const trace1 = {
+    x: monthlyData.months,
+    y: monthlyData.counts,
+    name: 'Complaint Volume',
+    type: 'bar',
+    marker: { color: '#94a3b8' }
+  };
+  const trace2 = {
+    x: monthlyData.months,
+    y: monthlyData.median_durations,
+    name: 'Median Duration (h)',
+    type: 'scatter',
+    mode: 'lines+markers',
+    yaxis: 'y2',
+    line: { color: '#0284c7', width: 2.5 }
+  };
+  const layoutMonthly = {
+    margin: { l: 45, r: 45, t: 20, b: 40 },
+    legend: { orientation: 'h', y: 1.15, x: 0.1 },
+    yaxis: { title: 'Requests' },
+    yaxis2: {
+      title: 'Median Hours',
+      overlaying: 'y',
+      side: 'right',
+      showgrid: false
+    }
+  };
+  Plotly.newPlot('chart-monthly-trend', [trace1, trace2], layoutMonthly, { responsive: true, displayModeBar: false });
+
+  // 2. Top Categories Chart
+  const topCatData = JSON.parse(document.getElementById('data-top-categories').textContent);
+  const traceTop = {
+    x: topCatData.counts.slice().reverse(),
+    y: topCatData.categories.slice().reverse(),
+    type: 'bar',
+    orientation: 'h',
+    marker: { color: '#0f766e' }
+  };
+  const layoutTop = {
+    margin: { l: 150, r: 25, t: 20, b: 35 },
+    xaxis: { title: 'Complaint Count' },
+    yaxis: { tickfont: { size: 10 } }
+  };
+  Plotly.newPlot('chart-top-categories', [traceTop], layoutTop, { responsive: true, displayModeBar: false });
+
+  // 3. Boroughs Chart
+  const boroughData = JSON.parse(document.getElementById('data-borough-breakdown').textContent);
+  const traceBoroughVol = {
+    x: boroughData.boroughs,
+    y: boroughData.counts,
+    name: 'Volume',
+    type: 'bar',
+    marker: { color: '#64748b' }
+  };
+  const traceBoroughDelay = {
+    x: boroughData.boroughs,
+    y: boroughData.long_rate_pct,
+    name: 'Delay Rate (%)',
+    type: 'scatter',
+    mode: 'lines+markers',
+    yaxis: 'y2',
+    line: { color: '#e11d48', width: 2 }
+  };
+  const layoutBorough = {
+    margin: { l: 45, r: 45, t: 20, b: 40 },
+    legend: { orientation: 'h', y: 1.15, x: 0.1 },
+    yaxis: { title: 'Complaints' },
+    yaxis2: {
+      title: 'Delay Rate (%)',
+      overlaying: 'y',
+      side: 'right',
+      range: [0, 100],
+      showgrid: false
+    }
+  };
+  Plotly.newPlot('chart-boroughs', [traceBoroughVol, traceBoroughDelay], layoutBorough, { responsive: true, displayModeBar: false });
+
+  // 4. Duration Distribution Chart
+  const distData = JSON.parse(document.getElementById('data-duration-dist').textContent);
+  const traceDist = {
+    x: distData.bins,
+    y: distData.counts,
+    type: 'bar',
+    marker: {
+      color: ['#10b981', '#3b82f6', '#0284c7', '#0f766e', '#f59e0b', '#f97316', '#ef4444']
+    }
+  };
+  const layoutDist = {
+    margin: { l: 45, r: 25, t: 20, b: 65 },
+    xaxis: { tickangle: -25, tickfont: { size: 9.5 } },
+    yaxis: { title: 'Closed Cases' }
+  };
+  Plotly.newPlot('chart-duration-dist', [traceDist], layoutDist, { responsive: true, displayModeBar: false });
+</script>
+{% endblock %}

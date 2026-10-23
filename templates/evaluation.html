@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Model Evaluation Centre — CivicResolve AI{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-3">
+  <div class="col-md-8">
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-scale-balanced me-2 text-primary"></i>Model Evaluation & Validation Centre</h3>
+    <p class="text-muted mb-0" style="font-size: 0.9rem;">
+      Empirical benchmarks, held-out test verification, diagnostic residual curves, and permutation explainability.
+    </p>
+  </div>
+</div>
+
+<!-- Notice Banner -->
+<div class="civic-alert-banner mb-4 d-flex align-items-center">
+  <i class="fa-solid fa-clock-rotate-left fs-5 text-primary me-3"></i>
+  <div>
+    <strong>Strict Temporal Splitting:</strong> Models were trained strictly on 2023 records ($N=4,711$). 
+    Candidate model selection occurred on 2024-H1 validation ($N=2,437$). 
+    Final test metrics reflect a single, frozen evaluation on 2024-H2 ($N=2,635$). No test-set tuning occurred.
+  </div>
+</div>
+
+<!-- Final Test Benchmark Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="civic-card p-3 border-primary h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0 text-primary"><i class="fa-solid fa-circle-check me-2"></i>Preferred Classifier (Final Test 2024-H2)</h6>
+        <span class="badge bg-primary">Logistic Regression (Balanced)</span>
+      </div>
+      <div class="row g-2 text-center mt-1">
+        <div class="col-3">
+          <div class="p-2 border rounded bg-light">
+            <div class="small text-muted">Recall</div>
+            <div class="fs-5 fw-bold text-success">88.7%</div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-2 border rounded bg-light">
+            <div class="small text-muted">Precision</div>
+            <div class="fs-5 fw-bold text-dark">59.1%</div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-2 border rounded bg-light">
+            <div class="small text-muted">F1-Score</div>
+            <div class="fs-5 fw-bold text-primary">0.7093</div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-2 border rounded bg-light">
+            <div class="small text-muted">ROC-AUC</div>
+            <div class="fs-5 fw-bold text-info">0.9262</div>
+          </div>
+        </div>
+      </div>
+      <p class="small text-muted mt-2 mb-0" style="font-size: 0.775rem;">
+        Caught 488 of 550 delayed complaints in held-out test data. Produces 338 false-positive alerts; designed as a screening filter.
+      </p>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="civic-card p-3 border-info h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0 text-info"><i class="fa-solid fa-circle-check me-2"></i>Preferred Regressor (Final Test 2024-H2)</h6>
+        <span class="badge bg-info text-dark">Random Forest (Log1p Target)</span>
+      </div>
+      <div class="row g-2 text-center mt-1">
+        <div class="col-3">
+          <div class="p-2 border rounded bg-light">
+            <div class="small text-muted">Test MAE</div>
+            <div class="fs-5 fw-bold text-dark">251.99h</div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-2 border rounded bg-light">
+            <div class="small text-muted">Median AE</div>
+            <div class="fs-5 fw-bold text-success">15.59h</div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-2 border rounded bg-light">
+            <div class="small text-muted">Test RMSE</div>
+            <div class="fs-5 fw-bold text-secondary">947.67h</div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-2 border rounded bg-light">
+            <div class="small text-muted">Test R²</div>
+            <div class="fs-5 fw-bold text-primary">0.1446</div>
+          </div>
+        </div>
+      </div>
+      <p class="small text-muted mt-2 mb-0" style="font-size: 0.775rem;">
+        Typical absolute error is ~15.6 hours. Heavy right-skew long-tail delays (up to 30,000h) inflate mean absolute error and suppress R².
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Comparison Tables -->
+<div class="row g-4 mb-4">
+  <!-- Regression Comparison -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold mb-2"><i class="fa-solid fa-table me-2 text-primary"></i>Regression Model Validation Benchmarks (2024-H1)</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover table-civic mb-0">
+          <thead>
+            <tr>
+              <th>Model Candidate</th>
+              <th>Val MAE (h)</th>
+              <th>Val RMSE (h)</th>
+              <th>Val R²</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in reg_models %}
+              <tr {% if 'Random Forest' in r.model_name %}class="table-primary fw-semibold"{% endif %}>
+                <td>
+                  {{ r.model_name }}
+                  {% if 'Random Forest' in r.model_name %}
+                    <span class="badge bg-success ms-1">Selected</span>
+                  {% endif %}
+                </td>
+                <td>{{ r.val_mae_hours }}</td>
+                <td>{{ r.val_rmse_hours }}</td>
+                <td>{{ r.val_r2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="small text-muted mt-2">Selection Criterion: Lowest Validation MAE.</div>
+    </div>
+  </div>
+
+  <!-- Classification Comparison -->
+  <div class="col-lg-6">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold mb-2"><i class="fa-solid fa-table me-2 text-primary"></i>Classification Model Validation Benchmarks (2024-H1)</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover table-civic mb-0">
+          <thead>
+            <tr>
+              <th>Model Candidate</th>
+              <th>Val F1</th>
+              <th>Val PR-AUC</th>
+              <th>Val ROC-AUC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in cls_models %}
+              <tr {% if 'Logistic Regression (Balanced)' in c.model_name %}class="table-primary fw-semibold"{% endif %}>
+                <td>
+                  {{ c.model_name }}
+                  {% if 'Logistic Regression (Balanced)' in c.model_name %}
+                    <span class="badge bg-success ms-1">Selected</span>
+                  {% endif %}
+                </td>
+                <td>{{ c.val_f1 }}</td>
+                <td>{{ c.val_pr_auc }}</td>
+                <td>{{ c.val_roc_auc }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="small text-muted mt-2">Selection Criterion: Highest Validation F1 with superior operational recall.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Diagnostic Figures Grid -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="civic-card p-3">
+      <h6 class="fw-bold mb-2"><i class="fa-solid fa-chart-column text-primary me-2"></i>Classification Confusion Matrix (Test 2024-H2)</h6>
+      <img src="{{ url_for('figure_file', filename='phase2_classification_confusion_matrix.png') }}" class="img-fluid rounded border" alt="Confusion Matrix">
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="civic-card p-3">
+      <h6 class="fw-bold mb-2"><i class="fa-solid fa-chart-line text-info me-2"></i>Precision-Recall & ROC Curves (Test 2024-H2)</h6>
+      <img src="{{ url_for('figure_file', filename='phase2_pr_roc_curves.png') }}" class="img-fluid rounded border" alt="PR and ROC Curves">
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="civic-card p-3">
+      <h6 class="fw-bold mb-2"><i class="fa-solid fa-chart-scatter text-success me-2"></i>Actual vs. Predicted Resolution Hours</h6>
+      <img src="{{ url_for('figure_file', filename='phase2_actual_vs_predicted.png') }}" class="img-fluid rounded border" alt="Actual vs Predicted">
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="civic-card p-3">
+      <h6 class="fw-bold mb-2"><i class="fa-solid fa-chart-area text-warning me-2"></i>Regression Residual Distribution</h6>
+      <img src="{{ url_for('figure_file', filename='phase2_regression_residuals.png') }}" class="img-fluid rounded border" alt="Residuals">
+    </div>
+  </div>
+</div>
+
+<!-- Permutation Feature Importance & Interpretation -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-7">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold mb-2"><i class="fa-solid fa-ranking-star text-primary me-2"></i>Permutation Feature Importance (Validation 2024-H1)</h6>
+      <img src="{{ url_for('figure_file', filename='phase2_feature_importance.png') }}" class="img-fluid rounded border mb-2" alt="Feature Importance">
+      <div class="alert alert-secondary py-2 px-3 small mb-0" style="font-size: 0.775rem;">
+        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+        <strong>Causal Disclaimer:</strong> Permutation importance measures purely statistical dependence within model predictions. 
+        High importance for <code>complaint_type</code> reflects departmental workflows and SLA standards, not a causal root cause of delay.
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="civic-card p-3 h-100">
+      <h6 class="fw-bold mb-2"><i class="fa-solid fa-book-open text-primary me-2"></i>Metric Interpretation Guide</h6>
+      <div class="accordion accordion-flush" id="metricAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#acc1">
+              MAE vs. Median Absolute Error
+            </button>
+          </h2>
+          <div id="acc1" class="accordion-collapse collapse show">
+            <div class="accordion-body small text-muted py-2">
+              Median Absolute Error is <strong>15.59 hours</strong>, while MAE is <strong>251.99 hours</strong>. This substantial divergence is driven by the extreme right tail (tickets taking thousands of hours). The typical ticket is predicted within 16 hours.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#acc2">
+              High Recall vs. Moderate Precision
+            </button>
+          </h2>
+          <div id="acc2" class="accordion-collapse collapse">
+            <div class="accordion-body small text-muted py-2">
+              Our classifier achieved <strong>88.7% Recall</strong> with <strong>59.1% Precision</strong>. In civic triage, missing a delayed complaint (FN=62) is far worse than screening a routine ticket early (FP=338).
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#acc3">
+              Why PR-AUC Matters More than ROC-AUC
+            </button>
+          </h2>
+          <div id="acc3" class="accordion-collapse collapse">
+            <div class="accordion-body small text-muted py-2">
+              Because only ~20.9% of complaints are long delays, ROC-AUC (0.9262) can look overly optimistic due to large True Negatives. The PR-AUC of <strong>0.7227</strong> substantially outperforms the 0.209 no-skill baseline, demonstrating robust precision across thresholds.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#acc4">
+              Project Threshold vs. Official SLA
+            </button>
+          </h2>
+          <div id="acc4" class="accordion-collapse collapse">
+            <div class="accordion-body small text-muted py-2">
+              The 124.925-hour cutoff is an empirical 75th percentile derived strictly from 2023 training data. It is an academic baseline, not an official municipal SLA violation.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
