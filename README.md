@@ -36,15 +36,17 @@ Municipal corporations receive tens of thousands of citizen complaints daily (ro
 
 ---
 
-## 🎥 Video Demo
-> 📺 **Demo Video Walkthrough**  
-> *A video demonstration showcasing the live dashboard, AI risk scoring, clustering map, and RL simulation will be featured here.*
+## 🎥 Video Demo & Live Walkthrough
+> 📺 **Watch CivicResolve AI in Action!**  
+> *A 5-minute end-to-end walkthrough demonstrating intake-time risk prediction, dynamic filtering, K-Means clustering, and Q-learning simulation.*
 
 <div align="center">
-  <a href="https://github.com/Tejas-952007/CivicResolve-AI">
-    <img src="report/screenshots/01_dashboard.png" alt="CivicResolve AI Video Preview" width="850" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+  <a href="report/civicresolve_demo_compressed.mp4">
+    <img src="report/screenshots/civicresolve_demo_preview.gif" alt="CivicResolve AI Interactive Walkthrough" width="850" style="border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
   </a>
-  <p><em>(Click image above to view the application walkthrough)</em></p>
+  <p>
+    <b>▶️ <a href="report/civicresolve_demo_compressed.mp4">Click here to watch or download the full 5-minute video walkthrough (MP4)</a></b>
+  </p>
 </div>
 
 ---
